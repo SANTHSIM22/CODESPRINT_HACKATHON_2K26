@@ -1,4 +1,5 @@
 const mandiService = require('../services/mandiService');
+const { analyzeMarket } = require('../agents/masterOrchestrator');
 
 /**
  * Get Mandi prices based on filters
@@ -107,9 +108,53 @@ const getCommodities = async (req, res) => {
   }
 };
 
+/**
+ * Comprehensive market analysis using all agents
+ */
+const analyze = async (req, res) => {
+  try {
+    const { cropType, location, quantity, quality, storageCapacity, financialUrgency } = req.body;
+
+    // Validate required fields
+    if (!cropType || !location) {
+      return res.status(400).json({
+        success: false,
+        error: 'cropType and location are required'
+      });
+    }
+
+    // Run the master orchestrator
+    const result = await analyzeMarket({
+      cropType: cropType,
+      location: location,
+      quantity: quantity || '10',
+      quality: quality || 'B',
+      storageCapacity: storageCapacity || '20',
+      financialUrgency: financialUrgency || 'medium'
+    });
+
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error || 'Analysis failed'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in analyze controller:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to analyze market'
+    });
+  }
+};
+
 module.exports = {
   getMandiPrices,
   getStates,
   getDistricts,
-  getCommodities
+  getCommodities,
+  analyze
 };

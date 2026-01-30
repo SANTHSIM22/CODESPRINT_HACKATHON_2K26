@@ -33,6 +33,40 @@ function FarmerDashboard() {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   
+  // AI Search States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  
+  // Weather States
+  const [weatherCrop, setWeatherCrop] = useState('');
+  const [weatherLocation, setWeatherLocation] = useState('');
+  const [weatherData, setWeatherData] = useState(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
+  
+  // Price Insights States
+  const [priceInsightsCrop, setPriceInsightsCrop] = useState('');
+  const [priceInsightsLocation, setPriceInsightsLocation] = useState('');
+  const [priceInsightsData, setPriceInsightsData] = useState(null);
+  const [priceInsightsLoading, setPriceInsightsLoading] = useState(false);
+  const [priceInsightsError, setPriceInsightsError] = useState('');
+  
+  // Market Analysis States (Master Orchestrator)
+  const [analysisForm, setAnalysisForm] = useState({
+    cropType: '',
+    location: '',
+    quantity: '',
+    quality: 'B',
+    storageCapacity: '',
+    financialUrgency: 'medium'
+  });
+  const [analysisData, setAnalysisData] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
+  const [activeAgents, setActiveAgents] = useState([]);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -252,8 +286,11 @@ function FarmerDashboard() {
             {[
               { id: 'add-product', label: 'Add Product', icon: 'M12 4v16m8-8H4' },
               { id: 'my-products', label: 'My Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+              { id: 'ask-ai', label: 'Ask AI Prices', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+              { id: 'weather', label: 'Weather Analysis', icon: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z' },
               { id: 'orders', label: 'Orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-              { id: 'analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+              { id: 'price-insights', label: 'Price Insights', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+              { id: 'analysis-reports', label: 'Analysis & Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
               { id: 'messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', badge: 3 },
               { id: 'settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
             ].map((item) => (
@@ -310,8 +347,11 @@ function FarmerDashboard() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {activeTab === 'add-product' && 'Add New Product'}
                   {activeTab === 'my-products' && 'My Products'}
+                  {activeTab === 'ask-ai' && 'Ask AI About Prices'}
+                  {activeTab === 'weather' && 'Weather Analysis'}
                   {activeTab === 'orders' && 'Orders'}
-                  {activeTab === 'analytics' && 'Analytics Dashboard'}
+                  {activeTab === 'price-insights' && 'Price Insights'}
+                  {activeTab === 'analysis-reports' && 'Analysis & Reports'}
                   {activeTab === 'messages' && 'Messages'}
                   {activeTab === 'settings' && 'Settings'}
                 </h1>
@@ -773,131 +813,1355 @@ function FarmerDashboard() {
             </div>
           )}
 
-          {/* Analytics Tab */}
-          {activeTab === 'analytics' && (
+          {/* Price Insights Tab */}
+          {activeTab === 'price-insights' && (
             <div className="space-y-6">
-              {/* Stats Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-green-600 text-sm font-semibold bg-green-50 px-2 py-1 rounded-lg">+12%</span>
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900">{stats.totalListings}</h3>
-                  <p className="text-gray-600">Total Listings</p>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold">Price Insights</h2>
                 </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-green-600 text-sm font-semibold bg-green-50 px-2 py-1 rounded-lg">+8%</span>
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900">{stats.activeOffers}</h3>
-                  <p className="text-gray-600">Active Offers</p>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-green-600 text-sm font-semibold bg-green-50 px-2 py-1 rounded-lg">+23%</span>
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</h3>
-                  <p className="text-gray-600">Total Revenue</p>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900">+{stats.monthlyGrowth}%</h3>
-                  <p className="text-gray-600">Monthly Growth</p>
-                </div>
+                <p className="text-green-100">Get real-time mandi prices, market analysis and selling recommendations for your crops</p>
               </div>
 
-              {/* Quick Actions */}
+              {/* Search Form */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <button 
-                    onClick={() => setActiveTab('add-product')}
-                    className="flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 rounded-xl transition-colors border border-green-100"
-                  >
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <span className="font-bold text-gray-900 block">Add New Listing</span>
-                      <span className="text-sm text-gray-500">List a new product</span>
-                    </div>
-                  </button>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Find Best Prices for Your Crop</h3>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!priceInsightsCrop.trim() || !priceInsightsLocation.trim()) return;
                   
-                  <button 
-                    onClick={() => setActiveTab('my-products')}
-                    className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-colors border border-blue-100"
-                  >
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                      </svg>
-                    </div>
-                    <div className="text-left">
-                      <span className="font-bold text-gray-900 block">View Products</span>
-                      <span className="text-sm text-gray-500">Manage listings</span>
-                    </div>
-                  </button>
+                  setPriceInsightsLoading(true);
+                  setPriceInsightsError('');
+                  setPriceInsightsData(null);
                   
-                  <button className="flex items-center gap-4 p-5 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-colors border border-purple-100">
-                    <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  try {
+                    const token = localStorage.getItem('token');
+                    const response = await axios.post('http://localhost:5000/api/agents/price-insights', 
+                      { cropType: priceInsightsCrop, location: priceInsightsLocation },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    
+                    if (response.data.success) {
+                      setPriceInsightsData(response.data.data);
+                    } else {
+                      setPriceInsightsError(response.data.error || 'Failed to fetch price insights');
+                    }
+                  } catch (error) {
+                    setPriceInsightsError(error.response?.data?.error || 'Failed to fetch price insights');
+                  } finally {
+                    setPriceInsightsLoading(false);
+                  }
+                }} className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Crop/Commodity</label>
+                      <input
+                        type="text"
+                        value={priceInsightsCrop}
+                        onChange={(e) => setPriceInsightsCrop(e.target.value)}
+                        placeholder="e.g., Wheat, Rice, Onion, Tomato"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Your Location/State</label>
+                      <input
+                        type="text"
+                        value={priceInsightsLocation}
+                        onChange={(e) => setPriceInsightsLocation(e.target.value)}
+                        placeholder="e.g., Punjab, Maharashtra, Uttar Pradesh"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={priceInsightsLoading || !priceInsightsCrop.trim() || !priceInsightsLocation.trim()}
+                    className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {priceInsightsLoading ? (
+                      <>
+                        <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Get Price Insights
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Error Display */}
+              {priceInsightsError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-red-600">{priceInsightsError}</p>
+                </div>
+              )}
+
+              {/* Price Insights Results */}
+              {priceInsightsData && (
+                <div className="space-y-6">
+                  {/* Market Summary */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
+                      Market Summary - {priceInsightsData.crop}
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                      {/* Your Location Price */}
+                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                        <p className="text-sm text-blue-600 font-medium mb-1">Your Nearest Mandi</p>
+                        <p className="text-2xl font-bold text-blue-900">
+                          {priceInsightsData.market_summary?.your_location?.price_display || 'N/A'}
+                        </p>
+                        <p className="text-sm text-blue-700">
+                          {priceInsightsData.market_summary?.your_location?.nearest_mandi}, {priceInsightsData.market_summary?.your_location?.city}
+                        </p>
+                      </div>
+                      
+                      {/* Highest Price */}
+                      <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+                        <p className="text-sm text-green-600 font-medium mb-1">Highest Price</p>
+                        <p className="text-2xl font-bold text-green-900">
+                          ₹{priceInsightsData.market_summary?.regional_prices?.highest_price?.price || 0}/quintal
+                        </p>
+                        <p className="text-sm text-green-700">
+                          {priceInsightsData.market_summary?.regional_prices?.highest_price?.mandi}, {priceInsightsData.market_summary?.regional_prices?.highest_price?.city}
+                        </p>
+                      </div>
+                      
+                      {/* Average Price */}
+                      <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                        <p className="text-sm text-purple-600 font-medium mb-1">Regional Average</p>
+                        <p className="text-2xl font-bold text-purple-900">
+                          {priceInsightsData.market_summary?.regional_prices?.average_display || 'N/A'}
+                        </p>
+                        <p className="text-sm text-purple-700">
+                          Variation: {priceInsightsData.market_summary?.price_variation?.percentage || '0%'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <span className="font-bold text-gray-900 block">View Reports</span>
-                      <span className="text-sm text-gray-500">Sales analytics</span>
+
+                    {/* Price Variation Interpretation */}
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-gray-700">
+                        <span className="font-semibold">Market Status: </span>
+                        {priceInsightsData.market_summary?.price_variation?.interpretation || 'No data available'}
+                      </p>
                     </div>
-                  </button>
+                  </div>
+
+                  {/* Selling Guidance */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      Selling Guidance
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Best Market */}
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border border-green-100">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-bold text-green-900 mb-1">Best Market to Sell</p>
+                            <p className="text-green-800">{priceInsightsData.selling_guidance?.best_market?.recommendation || 'N/A'}</p>
+                            <p className="text-sm text-green-600 mt-2">
+                              Expected: ₹{priceInsightsData.selling_guidance?.best_market?.expected_price || 0}/quintal
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Price Advantage */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-bold text-blue-900 mb-1">Extra Earning Potential</p>
+                            <p className="text-2xl font-bold text-blue-800">
+                              {priceInsightsData.selling_guidance?.price_advantage?.extra_earning || '₹0/quintal'}
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              {priceInsightsData.selling_guidance?.price_advantage?.percentage_gain || '0%'} more than local
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Timing & Quality Tips */}
+                    <div className="grid md:grid-cols-2 gap-4 mt-4">
+                      <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
+                        <p className="font-semibold text-yellow-900 mb-1">⏰ Timing Advice</p>
+                        <p className="text-yellow-800">{priceInsightsData.selling_guidance?.timing_advice?.advice || 'N/A'}</p>
+                        <p className="text-sm text-yellow-600 mt-1">{priceInsightsData.selling_guidance?.timing_advice?.reason || ''}</p>
+                      </div>
+                      <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
+                        <p className="font-semibold text-pink-900 mb-1">💎 Quality Tips</p>
+                        <p className="text-pink-800 text-sm">{priceInsightsData.selling_guidance?.quality_tips?.tip || 'N/A'}</p>
+                        <p className="text-sm text-pink-600 mt-1">
+                          Premium potential: {priceInsightsData.selling_guidance?.quality_tips?.premium_potential || 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Market Intelligence */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Market Intelligence
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Market Condition */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <p className="text-sm text-gray-500 mb-1">Market Condition</p>
+                        <p className={`font-bold text-lg ${
+                          priceInsightsData.market_intelligence?.market_condition?.status === 'Stable' ? 'text-green-600' :
+                          priceInsightsData.market_intelligence?.market_condition?.status === 'Volatile' ? 'text-red-600' : 'text-yellow-600'
+                        }`}>
+                          {priceInsightsData.market_intelligence?.market_condition?.status || 'Unknown'}
+                        </p>
+                      </div>
+                      
+                      {/* Trend */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <p className="text-sm text-gray-500 mb-1">Price Trend</p>
+                        <p className={`font-bold text-lg flex items-center gap-1 ${
+                          priceInsightsData.market_intelligence?.trend_indicator?.direction === 'rising' ? 'text-green-600' :
+                          priceInsightsData.market_intelligence?.trend_indicator?.direction === 'falling' ? 'text-red-600' : 'text-gray-600'
+                        }`}>
+                          {priceInsightsData.market_intelligence?.trend_indicator?.direction === 'rising' && '↑'}
+                          {priceInsightsData.market_intelligence?.trend_indicator?.direction === 'falling' && '↓'}
+                          {priceInsightsData.market_intelligence?.trend_indicator?.direction === 'stable' && '→'}
+                          {priceInsightsData.market_intelligence?.trend_indicator?.direction || 'Unknown'}
+                        </p>
+                      </div>
+                      
+                      {/* Arbitrage */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <p className="text-sm text-gray-500 mb-1">Arbitrage Opportunity</p>
+                        <p className={`font-bold text-lg ${
+                          priceInsightsData.market_intelligence?.arbitrage_opportunity?.exists ? 'text-green-600' : 'text-gray-600'
+                        }`}>
+                          {priceInsightsData.market_intelligence?.arbitrage_opportunity?.exists ? 'Yes ✓' : 'No'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {priceInsightsData.market_intelligence?.arbitrage_opportunity?.potential_gain || ''}
+                        </p>
+                      </div>
+                      
+                      {/* Market Efficiency */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <p className="text-sm text-gray-500 mb-1">Market Efficiency</p>
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {priceInsightsData.market_intelligence?.market_efficiency || 'Unknown'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mandi Prices Table */}
+                  {priceInsightsData.mandi_prices && priceInsightsData.mandi_prices.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        Mandi Prices ({priceInsightsData.total_mandis_fetched} markets)
+                      </h3>
+                      
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Mandi</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">City</th>
+                              <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Min Price</th>
+                              <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Max Price</th>
+                              <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">Modal Price</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {priceInsightsData.mandi_prices.slice(0, 10).map((mandi, index) => (
+                              <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-900">{mandi.mandi_name}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{mandi.city}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 text-right">₹{mandi.min_price}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 text-right">₹{mandi.max_price}</td>
+                                <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">₹{mandi.modal_price}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {/* Empty State */}
+              {!priceInsightsData && !priceInsightsLoading && !priceInsightsError && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-green-50 rounded-full flex items-center justify-center">
+                    <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Get Real-Time Price Insights</h3>
+                  <p className="text-gray-500 mb-4">Enter your crop and location to see current mandi prices, best markets to sell, and smart recommendations</p>
+                  <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-400">
+                    <span className="bg-gray-100 px-3 py-1 rounded-full">Wheat</span>
+                    <span className="bg-gray-100 px-3 py-1 rounded-full">Rice</span>
+                    <span className="bg-gray-100 px-3 py-1 rounded-full">Onion</span>
+                    <span className="bg-gray-100 px-3 py-1 rounded-full">Tomato</span>
+                    <span className="bg-gray-100 px-3 py-1 rounded-full">Potato</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Ask AI Tab */}
+          {activeTab === 'ask-ai' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold">AI Price Assistant</h2>
+                </div>
+                <p className="text-green-100">Ask about current crop prices, market trends, and get AI-powered insights</p>
               </div>
 
-              {/* Recent Activity */}
+              {/* Search Box */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((_, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">New offer received</p>
-                        <p className="text-sm text-gray-500">Buyer interested in your wheat listing</p>
-                      </div>
-                      <span className="text-sm text-gray-400">2h ago</span>
-                    </div>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!searchQuery.trim()) return;
+                  
+                  setSearchLoading(true);
+                  setSearchError('');
+                  setSearchResult(null);
+                  
+                  try {
+                    const token = localStorage.getItem('token');
+                    const response = await axios.post('http://localhost:5000/api/agents/search', 
+                      { query: searchQuery },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    if (response.data.success) {
+                      setSearchResult(response.data.data);
+                    }
+                  } catch (error) {
+                    setSearchError('Failed to get answer. Please try again.');
+                  } finally {
+                    setSearchLoading(false);
+                  }
+                }}>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="e.g., What is the price of wheat in Punjab?"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <button
+                      type="submit"
+                      disabled={searchLoading || !searchQuery.trim()}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {searchLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          Ask AI
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Quick Questions */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {['Wheat prices today', 'Rice in Karnataka', 'Onion market trend', 'Tomato prices'].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => setSearchQuery(q)}
+                      className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                    >
+                      {q}
+                    </button>
                   ))}
                 </div>
               </div>
+
+              {/* Error */}
+              {searchError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+                  {searchError}
+                </div>
+              )}
+
+              {/* Result */}
+              {searchResult && (
+                <div className="space-y-4">
+                  {/* AI Answer */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                      <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        AI Answer
+                      </h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="text-gray-700 leading-relaxed whitespace-pre-line prose prose-sm max-w-none">
+                        {searchResult.answer.split('\n').map((line, index) => {
+                          // Handle bold text **text**
+                          const formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                          
+                          if (line.startsWith('- ')) {
+                            return (
+                              <div key={index} className="flex items-start gap-2 ml-4 my-1">
+                                <span className="text-green-500 mt-1">•</span>
+                                <span dangerouslySetInnerHTML={{ __html: formattedLine.substring(2) }} />
+                              </div>
+                            );
+                          } else if (/^\d+\.\s/.test(line)) {
+                            return (
+                              <div key={index} className="flex items-start gap-2 ml-4 my-1">
+                                <span className="text-green-600 font-semibold">{line.match(/^\d+/)[0]}.</span>
+                                <span dangerouslySetInnerHTML={{ __html: formattedLine.replace(/^\d+\.\s*/, '') }} />
+                              </div>
+                            );
+                          } else if (line.includes('**')) {
+                            return <p key={index} className="my-2 font-medium" dangerouslySetInnerHTML={{ __html: formattedLine }} />;
+                          } else if (line.startsWith('*') && line.endsWith('*')) {
+                            return <p key={index} className="my-2 text-sm text-gray-500 italic">{line.replace(/^\*|\*$/g, '')}</p>;
+                          } else if (line.trim() === '') {
+                            return <div key={index} className="h-2" />;
+                          } else {
+                            return <p key={index} className="my-1">{line}</p>;
+                          }
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mandi Price Data */}
+                  {searchResult.mandiData && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Mandi Prices - {searchResult.mandiData.commodity}
+                        </h3>
+                      </div>
+                      <div className="p-6">
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="text-center p-4 bg-green-50 rounded-xl">
+                            <p className="text-2xl font-bold text-green-600">₹{searchResult.mandiData.avgModalPrice}</p>
+                            <p className="text-xs text-gray-500">Avg Price/Quintal</p>
+                          </div>
+                          <div className="text-center p-4 bg-blue-50 rounded-xl">
+                            <p className="text-2xl font-bold text-blue-600">₹{searchResult.mandiData.minPrice}</p>
+                            <p className="text-xs text-gray-500">Min Price</p>
+                          </div>
+                          <div className="text-center p-4 bg-red-50 rounded-xl">
+                            <p className="text-2xl font-bold text-red-600">₹{searchResult.mandiData.maxPrice}</p>
+                            <p className="text-xs text-gray-500">Max Price</p>
+                          </div>
+                        </div>
+                        
+                        {searchResult.mandiData.markets?.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-gray-900 mb-3">Top Markets</h4>
+                            <div className="space-y-2">
+                              {searchResult.mandiData.markets.slice(0, 5).map((m, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                  <div>
+                                    <p className="font-medium text-gray-900">{m.market}</p>
+                                    <p className="text-xs text-gray-500">{m.district}, {m.state}</p>
+                                  </div>
+                                  <span className="font-bold text-green-600">₹{m.modalPrice}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Related News */}
+                  {searchResult.news?.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200">
+                        <h3 className="font-bold text-gray-900">Related News</h3>
+                      </div>
+                      <div className="p-6 space-y-3">
+                        {searchResult.news.map((n, i) => (
+                          <a key={i} href={n.url} target="_blank" rel="noopener noreferrer" className="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <p className="font-medium text-gray-900 text-sm">{n.title}</p>
+                            <p className="text-xs text-gray-500 mt-1">{n.source}</p>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!searchResult && !searchLoading && !searchError && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center">
+                    <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Ask About Crop Prices</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Get real-time mandi prices, market trends, and news for any crop. Try asking "What is the price of rice in Maharashtra?"
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Weather Tab */}
+          {activeTab === 'weather' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold">Weather Analysis</h2>
+                </div>
+                <p className="text-blue-100">Get AI-powered weather insights for your crops and farming decisions</p>
+              </div>
+
+              {/* Input Form */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!weatherCrop.trim() || !weatherLocation.trim()) return;
+                  
+                  setWeatherLoading(true);
+                  setWeatherError('');
+                  setWeatherData(null);
+                  
+                  try {
+                    const token = localStorage.getItem('token');
+                    const response = await axios.post('http://localhost:5000/api/agents/weather', 
+                      { cropType: weatherCrop, location: weatherLocation },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    if (response.data.success) {
+                      setWeatherData(response.data.data);
+                    }
+                  } catch (error) {
+                    setWeatherError('Failed to get weather analysis. Please try again.');
+                  } finally {
+                    setWeatherLoading(false);
+                  }
+                }}>
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Crop Type</label>
+                      <input
+                        type="text"
+                        value={weatherCrop}
+                        onChange={(e) => setWeatherCrop(e.target.value)}
+                        placeholder="e.g., Wheat, Rice, Cotton"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                      <input
+                        type="text"
+                        value={weatherLocation}
+                        onChange={(e) => setWeatherLocation(e.target.value)}
+                        placeholder="e.g., Punjab, Maharashtra"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={weatherLoading || !weatherCrop.trim() || !weatherLocation.trim()}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {weatherLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                        Analyzing Weather...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                        </svg>
+                        Get Weather Analysis
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Quick Selections */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="text-sm text-gray-500">Quick select:</span>
+                  {[
+                    { crop: 'Wheat', location: 'Punjab' },
+                    { crop: 'Rice', location: 'West Bengal' },
+                    { crop: 'Cotton', location: 'Gujarat' },
+                    { crop: 'Sugarcane', location: 'Maharashtra' }
+                  ].map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setWeatherCrop(item.crop); setWeatherLocation(item.location); }}
+                      className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                    >
+                      {item.crop} - {item.location}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Error */}
+              {weatherError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+                  {weatherError}
+                </div>
+              )}
+
+              {/* Weather Result */}
+              {weatherData && (
+                <div className="space-y-4">
+                  {/* Current Conditions */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-4 border-b border-gray-200">
+                      <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Current Conditions - {weatherData.location}
+                      </h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="grid grid-cols-4 gap-4 mb-4">
+                        <div className="text-center p-4 bg-orange-50 rounded-xl">
+                          <svg className="w-8 h-8 mx-auto mb-2 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                          <p className="text-lg font-bold text-orange-600">{weatherData.weather?.temperature}°C</p>
+                          <p className="text-xs text-gray-500">Temperature</p>
+                        </div>
+                        <div className="text-center p-4 bg-blue-50 rounded-xl">
+                          <svg className="w-8 h-8 mx-auto mb-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                          </svg>
+                          <p className="text-lg font-bold text-blue-600">{weatherData.weather?.rainfall} mm</p>
+                          <p className="text-xs text-gray-500">Rainfall</p>
+                        </div>
+                        <div className="text-center p-4 bg-teal-50 rounded-xl">
+                          <svg className="w-8 h-8 mx-auto mb-2 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                          </svg>
+                          <p className="text-lg font-bold text-teal-600">{weatherData.weather?.humidity}%</p>
+                          <p className="text-xs text-gray-500">Humidity</p>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-xl">
+                          <svg className="w-8 h-8 mx-auto mb-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p className="text-lg font-bold text-purple-600 capitalize">{weatherData.weather?.condition}</p>
+                          <p className="text-xs text-gray-500">Condition</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Risk Level Badge */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-700">Risk Level:</span>
+                    <span className={`px-4 py-2 rounded-lg text-sm font-bold ${
+                      weatherData.riskLevel === 'high' ? 'bg-red-100 text-red-700' :
+                      weatherData.riskLevel === 'low' ? 'bg-green-100 text-green-700' :
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {weatherData.riskLevel?.toUpperCase() || 'MEDIUM'}
+                    </span>
+                  </div>
+
+                  {/* AI Analysis */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                      <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        AI Weather Analysis for {weatherData.crop}
+                      </h3>
+                    </div>
+                    <div className="p-6">
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-line">{weatherData.analysis}</p>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  {weatherData.recommendations && weatherData.recommendations.length > 0 && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-6">
+                      <h4 className="font-bold text-green-900 mb-4 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Recommendations
+                      </h4>
+                      <ul className="space-y-3">
+                        {weatherData.recommendations.map((rec, idx) => (
+                          <li key={idx} className="flex items-start gap-3">
+                            <span className="flex-shrink-0 w-6 h-6 bg-green-200 text-green-800 rounded-full flex items-center justify-center text-sm font-bold">
+                              {idx + 1}
+                            </span>
+                            <span className="text-green-800">{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Optimal Actions */}
+                  {weatherData.optimalActions && (
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border border-amber-200 p-6">
+                      <h4 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Immediate Action Required
+                      </h4>
+                      <p className="text-amber-800">{weatherData.optimalActions}</p>
+                    </div>
+                  )}
+
+                  {/* Timestamp */}
+                  <div className="text-center text-sm text-gray-500">
+                    Analysis generated at: {new Date(weatherData.timestamp).toLocaleString()}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!weatherData && !weatherLoading && !weatherError && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                    <svg className="w-10 h-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Get Weather Insights</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Enter your crop type and location to get AI-powered weather analysis and farming recommendations.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Analysis & Reports Tab */}
+          {activeTab === 'analysis-reports' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold">AI-Powered Market Analysis</h2>
+                </div>
+                <p className="text-indigo-100">Get comprehensive price recommendations using 5 AI agents analyzing prices, news, weather, and market trends</p>
+              </div>
+
+              {/* Agent Status Indicators */}
+              <div className="grid grid-cols-5 gap-2">
+                {[
+                  { id: 'price', name: 'Price Agent', icon: '💰' },
+                  { id: 'news', name: 'News Agent', icon: '📰' },
+                  { id: 'weather', name: 'Weather Agent', icon: '🌤️' },
+                  { id: 'search', name: 'Search Agent', icon: '🔍' },
+                  { id: 'analytics', name: 'Analytics Agent', icon: '🤖' }
+                ].map((agent) => (
+                  <div
+                    key={agent.id}
+                    className={`p-3 rounded-xl text-center transition-all ${
+                      activeAgents.includes(agent.id)
+                        ? 'bg-green-100 border-2 border-green-500'
+                        : 'bg-gray-100 border-2 border-gray-200'
+                    }`}
+                  >
+                    <span className="text-2xl">{agent.icon}</span>
+                    <p className="text-xs font-medium mt-1">{agent.name}</p>
+                    {activeAgents.includes(agent.id) && (
+                      <span className="text-xs text-green-600">✓ Active</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Analysis Form */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Enter Your Details for AI Analysis
+                </h3>
+                
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setAnalysisLoading(true);
+                  setAnalysisError('');
+                  setAnalysisData(null);
+                  setActiveAgents([]);
+                  
+                  const agents = ['price', 'news', 'weather', 'search', 'analytics'];
+                  agents.forEach((agent, index) => {
+                    setTimeout(() => {
+                      setActiveAgents(prev => [...prev, agent]);
+                    }, index * 800);
+                  });
+                  
+                  try {
+                    const response = await axios.post('http://localhost:5000/api/analyze', analysisForm);
+                    if (response.data.success) {
+                      setAnalysisData(response.data);
+                    } else {
+                      setAnalysisError(response.data.error || 'Analysis failed');
+                    }
+                  } catch (error) {
+                    setAnalysisError(error.response?.data?.error || 'Failed to analyze. Please try again.');
+                  } finally {
+                    setAnalysisLoading(false);
+                  }
+                }} className="space-y-4">
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Crop Type *</label>
+                      <input
+                        type="text"
+                        value={analysisForm.cropType}
+                        onChange={(e) => setAnalysisForm({...analysisForm, cropType: e.target.value})}
+                        placeholder="e.g., Wheat, Rice, Cotton"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Location/State *</label>
+                      <input
+                        type="text"
+                        value={analysisForm.location}
+                        onChange={(e) => setAnalysisForm({...analysisForm, location: e.target.value})}
+                        placeholder="e.g., Punjab, Maharashtra"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Quantity (Quintals)</label>
+                      <input
+                        type="number"
+                        value={analysisForm.quantity}
+                        onChange={(e) => setAnalysisForm({...analysisForm, quantity: e.target.value})}
+                        placeholder="e.g., 50"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Quality Grade</label>
+                      <select
+                        value={analysisForm.quality}
+                        onChange={(e) => setAnalysisForm({...analysisForm, quality: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="A">Grade A (Premium)</option>
+                        <option value="B">Grade B (Standard)</option>
+                        <option value="C">Grade C (Basic)</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Storage Capacity (Quintals)</label>
+                      <input
+                        type="number"
+                        value={analysisForm.storageCapacity}
+                        onChange={(e) => setAnalysisForm({...analysisForm, storageCapacity: e.target.value})}
+                        placeholder="e.g., 100"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Financial Urgency</label>
+                      <select
+                        value={analysisForm.financialUrgency}
+                        onChange={(e) => setAnalysisForm({...analysisForm, financialUrgency: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="low">Low - Can wait for best price</option>
+                        <option value="medium">Medium - Flexible timing</option>
+                        <option value="high">High - Need to sell soon</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <button
+                    type="submit"
+                    disabled={analysisLoading || !analysisForm.cropType || !analysisForm.location}
+                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  >
+                    {analysisLoading ? (
+                      <>
+                        <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analyzing with 5 AI Agents...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Get AI Price Recommendation
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Error Display */}
+              {analysisError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-red-600 flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {analysisError}
+                  </p>
+                </div>
+              )}
+
+              {/* Analysis Results */}
+              {analysisData && analysisData.data && (
+                <div className="space-y-6">
+                  {/* Main Recommendation Hero */}
+                  <div className="bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-lg border border-indigo-100 p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900">
+                          {analysisData.data.recommendation?.crop} in {analysisData.data.recommendation?.location}
+                        </h3>
+                        <p className="text-gray-500">AI-Powered Market Analysis</p>
+                      </div>
+                      <div className={`px-6 py-3 rounded-full font-bold text-lg ${
+                        analysisData.data.recommendation?.recommendation?.action?.includes('SELL NOW') 
+                          ? 'bg-green-500 text-white' 
+                          : analysisData.data.recommendation?.recommendation?.action?.includes('WAIT')
+                          ? 'bg-yellow-500 text-white'
+                          : 'bg-blue-500 text-white'
+                      }`}>
+                        {analysisData.data.recommendation?.recommendation?.action || 'ANALYZING'}
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6 mb-6">
+                      <div className="bg-white rounded-xl p-4 border border-gray-200">
+                        <p className="text-sm text-gray-500 mb-1">Current Market Price</p>
+                        <p className="text-3xl font-bold text-green-600">
+                          ₹{analysisData.data.recommendation?.market_summary?.current_modal_price?.toLocaleString() || 'N/A'}/qtl
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {analysisData.data.recommendation?.market_summary?.mandi_name}, {analysisData.data.recommendation?.market_summary?.city}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-xl p-4 border border-gray-200">
+                        <p className="text-sm text-gray-500 mb-1">Recommended Target Price</p>
+                        <p className="text-3xl font-bold text-indigo-600">
+                          {analysisData.data.recommendation?.recommendation?.target_price || 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {analysisData.data.recommendation?.recommendation?.timing || 'Based on market conditions'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+                      <p className="text-indigo-900 font-medium">
+                        💡 {analysisData.data.recommendation?.farmer_friendly_summary || analysisData.data.recommendation?.recommendation?.reasoning}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-600">Confidence Level</span>
+                        <span className={`text-sm font-bold ${
+                          analysisData.data.recommendation?.recommendation?.confidence === 'high' ? 'text-green-600' :
+                          analysisData.data.recommendation?.recommendation?.confidence === 'medium' ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {analysisData.data.recommendation?.recommendation?.confidence?.toUpperCase() || 'MEDIUM'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className={`h-2 rounded-full ${
+                          analysisData.data.recommendation?.recommendation?.confidence === 'high' ? 'bg-green-500 w-4/5' :
+                          analysisData.data.recommendation?.recommendation?.confidence === 'medium' ? 'bg-yellow-500 w-3/5' : 'bg-red-500 w-2/5'
+                        }`}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Agent Outputs Grid */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {analysisData.data.agentOutputs?.priceData && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">💰</span> 
+                          {analysisData.data.agentOutputs.priceData.data_source === 'AI_ESTIMATE' ? 'AI Price Estimates' : 'Mandi Price Data'}
+                          {analysisData.data.agentOutputs.priceData.data_source === 'AI_ESTIMATE' && (
+                            <span className="ml-auto px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-800">AI ESTIMATE</span>
+                          )}
+                        </h4>
+                        
+                        {/* Show AI Estimated Prices */}
+                        {analysisData.data.agentOutputs.priceData.data_source === 'AI_ESTIMATE' && analysisData.data.agentOutputs.priceData.ai_estimated_prices && (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="text-center p-3 bg-red-50 rounded-lg">
+                                <p className="text-xl font-bold text-red-600">₹{analysisData.data.agentOutputs.priceData.ai_estimated_prices.min_price?.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">Min Price</p>
+                              </div>
+                              <div className="text-center p-3 bg-green-50 rounded-lg">
+                                <p className="text-xl font-bold text-green-600">₹{analysisData.data.agentOutputs.priceData.ai_estimated_prices.modal_price?.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">Modal Price</p>
+                              </div>
+                              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                <p className="text-xl font-bold text-blue-600">₹{analysisData.data.agentOutputs.priceData.ai_estimated_prices.max_price?.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">Max Price</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="font-medium">Trend:</span>
+                              <span className={`px-2 py-1 rounded ${
+                                analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'rising' ? 'bg-green-100 text-green-700' :
+                                analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'falling' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'rising' ? '📈 Rising' :
+                                 analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'falling' ? '📉 Falling' : '➡️ Stable'}
+                              </span>
+                              <span className="ml-2 text-gray-500">Confidence: {analysisData.data.agentOutputs.priceData.ai_estimated_prices.confidence}</span>
+                            </div>
+                            {analysisData.data.agentOutputs.priceData.ai_estimated_prices.rationale && (
+                              <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                                {analysisData.data.agentOutputs.priceData.ai_estimated_prices.rationale}
+                              </p>
+                            )}
+                            {analysisData.data.agentOutputs.priceData.insights?.market_factors?.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-xs font-medium text-gray-500 mb-1">Key Factors:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {analysisData.data.agentOutputs.priceData.insights.market_factors.map((factor, i) => (
+                                    <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded">{factor}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {analysisData.data.agentOutputs.priceData.disclaimer && (
+                              <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded mt-2">
+                                ⚠️ {analysisData.data.agentOutputs.priceData.disclaimer}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Show Mandi Prices */}
+                        {analysisData.data.agentOutputs.priceData.data_source !== 'AI_ESTIMATE' && (
+                          <div className="space-y-3">
+                            {analysisData.data.agentOutputs.priceData.mandi_prices?.slice(0, 4).map((mandi, i) => (
+                              <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <div>
+                                  <p className="font-medium text-gray-900">{mandi.mandi_name}</p>
+                                  <p className="text-sm text-gray-500">{mandi.city}</p>
+                                </div>
+                                <p className="font-bold text-green-600">₹{mandi.modal_price?.toLocaleString()}/qtl</p>
+                              </div>
+                            ))}
+                            {analysisData.data.agentOutputs.priceData.insights?.best_market_to_sell && (
+                              <div className="bg-green-50 rounded-lg p-3 mt-3">
+                                <p className="text-sm text-green-800">
+                                  <strong>Best Market:</strong> {analysisData.data.agentOutputs.priceData.insights.best_market_to_sell}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {analysisData.data.agentOutputs?.newsAnalysis && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">📰</span> News Analysis
+                          <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${
+                            analysisData.data.agentOutputs.newsAnalysis.overall_sentiment === 'bullish' ? 'bg-green-100 text-green-800' :
+                            analysisData.data.agentOutputs.newsAnalysis.overall_sentiment === 'bearish' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {analysisData.data.agentOutputs.newsAnalysis.overall_sentiment?.toUpperCase()}
+                          </span>
+                        </h4>
+                        {analysisData.data.agentOutputs.newsAnalysis.key_takeaway && (
+                          <p className="text-gray-700 mb-3">{analysisData.data.agentOutputs.newsAnalysis.key_takeaway}</p>
+                        )}
+                        <div className="space-y-2">
+                          {analysisData.data.agentOutputs.newsAnalysis.news_items?.slice(0, 3).map((news, i) => (
+                            <div key={i} className="text-sm border-l-2 border-indigo-300 pl-3">
+                              <p className="font-medium text-gray-800">{news.headline}</p>
+                              <p className="text-gray-500 text-xs">{news.source} • {news.date}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisData.data.agentOutputs?.weatherAnalysis && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">🌤️</span> Weather Impact
+                        </h4>
+                        <div className="grid grid-cols-3 gap-3 mb-4">
+                          <div className="text-center p-2 bg-blue-50 rounded-lg">
+                            <p className="text-2xl font-bold text-blue-600">{analysisData.data.agentOutputs.weatherAnalysis.current_conditions?.temperature}</p>
+                            <p className="text-xs text-gray-500">Temp</p>
+                          </div>
+                          <div className="text-center p-2 bg-cyan-50 rounded-lg">
+                            <p className="text-2xl font-bold text-cyan-600">{analysisData.data.agentOutputs.weatherAnalysis.current_conditions?.humidity}</p>
+                            <p className="text-xs text-gray-500">Humidity</p>
+                          </div>
+                          <div className="text-center p-2 bg-indigo-50 rounded-lg">
+                            <p className="text-2xl font-bold text-indigo-600">{analysisData.data.agentOutputs.weatherAnalysis.current_conditions?.precipitation}</p>
+                            <p className="text-xs text-gray-500">Rain</p>
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <p className="text-sm"><strong>Price Pressure:</strong> {analysisData.data.agentOutputs.weatherAnalysis.price_pressure}</p>
+                          <p className="text-sm text-gray-600 mt-1">{analysisData.data.agentOutputs.weatherAnalysis.harvest_impact}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisData.data.agentOutputs?.searchInsights && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">🔍</span> Market Intelligence
+                          <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${
+                            analysisData.data.agentOutputs.searchInsights.market_sentiment === 'bullish' ? 'bg-green-100 text-green-800' :
+                            analysisData.data.agentOutputs.searchInsights.market_sentiment === 'bearish' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {analysisData.data.agentOutputs.searchInsights.market_sentiment?.toUpperCase()}
+                          </span>
+                        </h4>
+                        <div className="space-y-3">
+                          <div className="bg-indigo-50 rounded-lg p-3">
+                            <p className="text-sm font-medium text-indigo-800">Demand: {analysisData.data.agentOutputs.searchInsights.demand_signals}</p>
+                          </div>
+                          {analysisData.data.agentOutputs.searchInsights.expert_forecasts && (
+                            <p className="text-sm text-gray-700">
+                              <strong>Forecast:</strong> {analysisData.data.agentOutputs.searchInsights.expert_forecasts}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Key Factors & Scenarios */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {analysisData.data.recommendation?.key_factors && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4">📊 Key Factors</h4>
+                        <div className="space-y-3">
+                          {analysisData.data.recommendation.key_factors.map((factor, i) => (
+                            <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                factor.impact === 'positive' ? 'bg-green-100 text-green-800' :
+                                factor.impact === 'negative' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {factor.impact === 'positive' ? '↑' : factor.impact === 'negative' ? '↓' : '→'}
+                              </span>
+                              <div>
+                                <p className="font-medium text-gray-900">{factor.factor}</p>
+                                <p className="text-sm text-gray-600">{factor.explanation}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisData.data.recommendation?.scenarios && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4">📈 Price Scenarios</h4>
+                        <div className="space-y-3">
+                          {analysisData.data.recommendation.scenarios.optimistic && (
+                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-medium text-green-800">Optimistic</span>
+                                <span className="text-sm text-green-600">{analysisData.data.recommendation.scenarios.optimistic.probability}</span>
+                              </div>
+                              <p className="text-lg font-bold text-green-700">{analysisData.data.recommendation.scenarios.optimistic.potential_price}</p>
+                              <p className="text-xs text-green-600">{analysisData.data.recommendation.scenarios.optimistic.conditions}</p>
+                            </div>
+                          )}
+                          {analysisData.data.recommendation.scenarios.expected && (
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-medium text-blue-800">Expected</span>
+                                <span className="text-sm text-blue-600">{analysisData.data.recommendation.scenarios.expected.probability}</span>
+                              </div>
+                              <p className="text-lg font-bold text-blue-700">{analysisData.data.recommendation.scenarios.expected.potential_price}</p>
+                              <p className="text-xs text-blue-600">{analysisData.data.recommendation.scenarios.expected.conditions}</p>
+                            </div>
+                          )}
+                          {analysisData.data.recommendation.scenarios.pessimistic && (
+                            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-medium text-red-800">Pessimistic</span>
+                                <span className="text-sm text-red-600">{analysisData.data.recommendation.scenarios.pessimistic.probability}</span>
+                              </div>
+                              <p className="text-lg font-bold text-red-700">{analysisData.data.recommendation.scenarios.pessimistic.potential_price}</p>
+                              <p className="text-xs text-red-600">{analysisData.data.recommendation.scenarios.pessimistic.conditions}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Plan & Risks */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {analysisData.data.recommendation?.action_plan && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4">📋 Action Plan</h4>
+                        <div className="space-y-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg">
+                            <p className="text-sm font-medium text-yellow-800">⚡ Immediate Steps</p>
+                            <p className="text-sm text-yellow-700">{analysisData.data.recommendation.action_plan.immediate_steps}</p>
+                          </div>
+                          <div className="p-3 bg-blue-50 rounded-lg">
+                            <p className="text-sm font-medium text-blue-800">👁️ Monitor</p>
+                            <p className="text-sm text-blue-700">{analysisData.data.recommendation.action_plan.monitoring}</p>
+                          </div>
+                          <div className="p-3 bg-purple-50 rounded-lg">
+                            <p className="text-sm font-medium text-purple-800">🔔 Triggers</p>
+                            <p className="text-sm text-purple-700">{analysisData.data.recommendation.action_plan.triggers}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {analysisData.data.recommendation?.risk_factors && (
+                      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <h4 className="font-bold text-gray-900 mb-4">⚠️ Risk Factors</h4>
+                        <ul className="space-y-2">
+                          {analysisData.data.recommendation.risk_factors.map((risk, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                              <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              {risk}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {analysisData.metadata && (
+                    <div className="text-center text-sm text-gray-500 mt-4">
+                      Analysis completed in {analysisData.metadata.processingTime} • 
+                      {analysisData.metadata.agentsRun?.length} AI agents used • 
+                      {new Date(analysisData.metadata.timestamp).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!analysisData && !analysisLoading && !analysisError && (
+                <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-200">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-indigo-50 rounded-full flex items-center justify-center">
+                    <svg className="w-12 h-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Get AI-Powered Market Analysis</h3>
+                  <p className="text-gray-500 max-w-lg mx-auto">
+                    Enter your crop details above to receive comprehensive price recommendations from our 5 AI agents analyzing real-time mandi prices, news, weather, and market trends.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
