@@ -954,8 +954,8 @@ function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#36656B] via-[#0a1109] to-[#36656B]"></div>
-        <div className="absolute inset-0 opacity-80">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#36656B] via-[#75B06F] to-[#36656B]"></div>
+        <div className="absolute inset-0 opacity-20">
           <img 
             src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
             alt="Background"

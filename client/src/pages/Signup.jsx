@@ -64,11 +64,18 @@ function Signup() {
     }
   };
 
+  const userImages = {
+    farmer: 'https://img.freepik.com/premium-photo/young-indian-farmer-green-agriculture-field_75648-6244.jpg?semt=ais_hybrid&w=740&q=80',
+    buyer: 'https://media.istockphoto.com/id/1328853722/photo/over-the-shoulder-view-of-young-asian-woman-doing-home-delivery-grocery-shopping-online-with.jpg?s=612x612&w=0&k=20&c=OXmKDgC3g3nb8mcG1bxP4WLqyjHvdZ9yWfY1gO9jAYA='
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center px-6 py-12">
+    <div className="h-screen flex overflow-hidden">
+      {/* Left Side - Form */}
+      <div className="w-full lg:w-1/2 bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center px-6 py-4">
       <div className="max-w-2xl w-full">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4">
           <Link to="/" className="inline-flex items-center gap-3 group">
             <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L13.09 8.26L19 6L14.74 10.91L21 12L14.74 13.09L19 18L13.09 15.74L12 22L10.91 15.74L5 18L9.26 13.09L3 12L9.26 10.91L5 6L10.91 8.26L12 2Z" fill="#16A34A"/>
@@ -77,18 +84,18 @@ function Signup() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
-          <p className="text-gray-600 mb-6">Join thousands of farmers and buyers</p>
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Create Account</h2>
+          <p className="text-gray-600 mb-4">Join thousands of farmers and buyers</p>
 
           {/* User Type Toggle */}
-          <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-xl">
+          <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setUserType('farmer')}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                 userType === 'farmer'
-                  ? 'bg-green-600 text-white shadow-md'
+                  ? 'bg-[#DAD877] text-gray-900 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -99,7 +106,7 @@ function Signup() {
               onClick={() => setUserType('buyer')}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                 userType === 'buyer'
-                  ? 'bg-green-600 text-white shadow-md'
+                  ? 'bg-[#DAD877] text-gray-900 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -113,10 +120,10 @@ function Signup() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Full Name
                 </label>
                 <input
@@ -131,7 +138,7 @@ function Signup() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Email Address
                 </label>
                 <input
@@ -146,9 +153,9 @@ function Signup() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Phone Number
                 </label>
                 <input
@@ -163,7 +170,7 @@ function Signup() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Location
                 </label>
                 <input
@@ -180,7 +187,7 @@ function Signup() {
 
             {userType === 'farmer' && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Farm Size (in acres)
                 </label>
                 <input
@@ -195,9 +202,9 @@ function Signup() {
               </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Password
                 </label>
                 <input
@@ -213,7 +220,7 @@ function Signup() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   Confirm Password
                 </label>
                 <input
@@ -229,7 +236,7 @@ function Signup() {
             </div>
 
             <label className="flex items-start">
-              <input type="checkbox" className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-1" required />
+              <input type="checkbox" className="w-5 h-5 text-[#DAD877] border-gray-300 rounded focus:ring-[#DAD877] mt-1" required />
               <span className="ml-3 text-sm text-gray-600">
                 I agree to the Terms of Service and Privacy Policy
               </span>
@@ -238,20 +245,41 @@ function Signup() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-green-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-green-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="text-green-600 hover:text-green-700 font-semibold">
+              <Link to="/login" className="text-[#36656B] hover:text-[#75B06F] font-semibold">
                 Sign in
               </Link>
             </p>
           </div>
+        </div>
+      </div>
+      </div>
+
+      {/* Right Side - Dynamic Image */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+        <img 
+          src={userImages[userType]} 
+          alt={`${userType} working`}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-12 z-10">
+          <h3 className="text-4xl font-bold text-white mb-4">
+            {userType === 'farmer' ? 'Start Your Journey' : 'Grow Your Business'}
+          </h3>
+          <p className="text-white/90 text-lg">
+            {userType === 'farmer' 
+              ? 'Transform your farming with direct market access and better prices'
+              : 'Connect directly with farmers and get the best quality produce'}
+          </p>
         </div>
       </div>
     </div>
