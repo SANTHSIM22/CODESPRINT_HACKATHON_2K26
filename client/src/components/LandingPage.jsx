@@ -3,12 +3,17 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Header from './Header';
 import Footer from './Footer';
+import Testimonials from './Testimonials';
 
 gsap.registerPlugin(ScrollTrigger);
 
 function LandingPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [activeCrop, setActiveCrop] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [flippedCards, setFlippedCards] = useState([false, false, false, false]);
   
   const heroRef = useRef(null);
   const featuresRef = useRef(null);
@@ -16,6 +21,7 @@ function LandingPage() {
   const stepsRef = useRef(null);
   const statsRef = useRef(null);
   const marqueeRef = useRef(null);
+  const featuresMarqueeRef = useRef(null);
   const cropCarouselRef = useRef(null);
 
   const testimonials = [
@@ -56,9 +62,9 @@ function LandingPage() {
   const crops = [
     { name: "Wheat", price: "2,450", change: "+12%", image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
     { name: "Rice", price: "3,200", change: "+8%", image: "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
-    { name: "Cotton", price: "6,800", change: "+15%", image: "https://images.unsplash.com/photo-1594897030264-ab7d87efc473?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
-    { name: "Soybean", price: "4,100", change: "+5%", image: "https://images.unsplash.com/photo-1599451897608-97eb07738d1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
-    { name: "Sugarcane", price: "350", change: "+3%", image: "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+    { name: "Cotton", price: "6,800", change: "+15%", image: "https://media.istockphoto.com/id/589121090/photo/branch-of-ripe-cotton.jpg?s=612x612&w=0&k=20&c=eGlf6UISNaZRIKxnoesMIIpOqzevDWtb_OoU_0KVN_M=" },
+    { name: "Soybean", price: "4,100", change: "+5%", image: "https://realnatural.in/wp-content/uploads/2024/07/8c8845b2-4e31-49e2-9953-f72c9d517739_1655577596328.jpg" },
+    { name: "Sugarcane", price: "350", change: "+3%", image: "https://media.istockphoto.com/id/528316683/photo/close-up-sugarcane.jpg?s=612x612&w=0&k=20&c=lMadBE2UFxjwhTkE4caG664ZXMnStIaISZ0b6csxL8M=" },
   ];
 
   const partners = [
@@ -95,8 +101,19 @@ function LandingPage() {
     const marqueeContent = marqueeRef.current;
     if (marqueeContent) {
       gsap.to(marqueeContent, {
+        xPercent: -5,
+        duration: 60,
+        repeat: -1,
+        ease: "none"
+      });
+    }
+
+    // Features marquee animation
+    const featuresMarqueeContent = featuresMarqueeRef.current;
+    if (featuresMarqueeContent) {
+      gsap.to(featuresMarqueeContent, {
         xPercent: -50,
-        duration: 20,
+        duration: 8,
         repeat: -1,
         ease: "none"
       });
@@ -277,6 +294,44 @@ function LandingPage() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Swipe/drag handlers for features carousel
+  const handleMouseDown = (e) => {
+    const slider = e.currentTarget;
+    setIsDragging(true);
+    setStartX(e.pageX - slider.offsetLeft);
+    setScrollLeftPos(slider.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const slider = e.currentTarget;
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 2;
+    slider.scrollLeft = scrollLeftPos - walk;
+  };
+
+  const handleTouchStart = (e) => {
+    const slider = e.currentTarget;
+    setStartX(e.touches[0].pageX - slider.offsetLeft);
+    setScrollLeftPos(slider.scrollLeft);
+  };
+
+  const handleTouchMove = (e) => {
+    const slider = e.currentTarget;
+    const x = e.touches[0].pageX - slider.offsetLeft;
+    const walk = (x - startX) * 2;
+    slider.scrollLeft = scrollLeftPos - walk;
+  };
+
   return (
     <div className="font-sans text-gray-900 overflow-x-hidden bg-white antialiased">
       {/* Navigation */}
@@ -287,7 +342,7 @@ function LandingPage() {
         {/* Animated Background */}
         <div className="absolute inset-0 -z-10">
           <div className="parallax-bg absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#F0F8A4]/30 via-white to-[#DAD887]/40"></div>
             <img 
               src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
               alt="Farm landscape" 
@@ -295,8 +350,8 @@ function LandingPage() {
             />
           </div>
           {/* Decorative Elements */}
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-300/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#75B06F]/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#DAD887]/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
           <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-lime-300/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
         </div>
 
@@ -317,19 +372,12 @@ function LandingPage() {
                 Trusted by 50,000+ Farmers Across India
               </div>
               
-              <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] mb-8 text-gray-900 tracking-tight">
-                <div className="hero-title-line overflow-hidden">
-                  <span className="block">Empowering</span>
-                </div>
-                <div className="hero-title-line overflow-hidden">
-                  <span className="block">Farmers with</span>
-                </div>
-                <div className="hero-title-line overflow-hidden">
-                  <span className="block bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
-                    Smart Agriculture
-                  </span>
-                </div>
+              <h1 className="abril-fatface-regular text-5xl lg:text-7xl leading-[1.1] text-gray-900 tracking-tight">
+                Empowering Farmers with 
               </h1>
+              <h1 className="abril-fatface-regular text-5xl lg:text-7xl leading-[1.1] mb-4 tracking-tight bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent pb-4">
+                    Smart Agriculture
+                  </h1>
               
               <p className="hero-subtitle text-xl text-gray-600 mb-10 leading-relaxed max-w-xl">
                 Connect directly with buyers, access real-time market prices, AI-powered insights, and maximize your profits with data-driven decisions.
@@ -343,18 +391,18 @@ function LandingPage() {
                   </svg>
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>
-                <button className="group flex items-center gap-3 bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-gray-200 hover:border-green-500 transition-all hover:shadow-xl">
+                {/* <button className="group flex items-center gap-3 bg-white hover:bg-gray-50 text-gray-700 px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-gray-200 hover:border-green-500 transition-all hover:shadow-xl">
                   <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors">
                     <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                   </div>
                   Watch Demo
-                </button>
+                </button> */}
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex items-center gap-8 flex-wrap">
+              {/* <div className="flex items-center gap-8 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-3">
                     {[1,2,3,4].map((i) => (
@@ -369,19 +417,19 @@ function LandingPage() {
                       />
                     ))}
                   </div>
-                  <div className="text-sm">
+                  {/* <div className="text-sm">
                     <span className="font-bold text-gray-900">4.9/5</span>
                     <span className="text-gray-500"> from 10k+ reviews</span>
-                  </div>
-                </div>
-                <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
-                <div className="flex items-center gap-2">
+                  </div> */}
+                {/* </div>
+                <div className="h-8 w-px bg-gray-200 hidden sm:block"></div> */}
+                {/* <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
                   </svg>
                   <span className="text-sm text-gray-600">Government Verified Platform</span>
-                </div>
-              </div>
+                </div> */}
+              {/* </div>*/}
             </div>
 
             {/* Right Content - Interactive Dashboard Preview */}
@@ -421,7 +469,7 @@ function LandingPage() {
                             <p className="text-white/80 text-sm">Current Price</p>
                             <p className="text-white font-bold text-2xl">{crop.name}: ₹{crop.price}/q</p>
                           </div>
-                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          <span className="bg-[#75B06F] text-white px-3 py-1 rounded-full text-sm font-semibold">
                             {crop.change}
                           </span>
                         </div>
@@ -445,15 +493,15 @@ function LandingPage() {
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-gray-50 rounded-xl p-4 text-center">
-                      <p className="text-2xl font-bold text-green-600">156</p>
+                      <p className="text-2xl font-bold text-[#36656B]">156</p>
                       <p className="text-xs text-gray-500">Active Buyers</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4 text-center">
-                      <p className="text-2xl font-bold text-emerald-600">₹2.4L</p>
+                      <p className="text-2xl font-bold text-[#75B06F]">₹2.4L</p>
                       <p className="text-xs text-gray-500">Avg. Monthly</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4 text-center">
-                      <p className="text-2xl font-bold text-teal-600">24h</p>
+                      <p className="text-2xl font-bold text-[#36656B]">24h</p>
                       <p className="text-xs text-gray-500">Quick Payment</p>
                     </div>
                   </div>
@@ -461,19 +509,19 @@ function LandingPage() {
 
                 {/* Floating Cards */}
                 <div className="floating-element absolute -top-4 -left-8 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-gray-100">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#75B06F] to-[#36656B] rounded-xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Today's Trend</p>
-                    <p className="font-bold text-green-600">+18% Wheat</p>
+                    <p className="font-bold text-[#36656B]">+18% Wheat</p>
                   </div>
                 </div>
 
                 <div className="floating-element absolute -bottom-4 -right-4 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-gray-100">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#75B06F] to-[#36656B] rounded-xl flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -484,10 +532,10 @@ function LandingPage() {
                   </div>
                 </div>
 
-                <div className="floating-element absolute top-1/2 -right-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white p-4 rounded-2xl shadow-xl">
+                <div className="floating-element absolute top-1/2 -right-12 bg-gradient-to-br from-[#75B06F] to-[#36656B] text-white p-4 rounded-2xl shadow-xl">
                   <div className="text-center">
                     <p className="text-3xl font-bold">+35%</p>
-                    <p className="text-sm text-green-100">Profit Increase</p>
+                    <p className="text-sm text-[#F0F8A4]">Profit Increase</p>
                   </div>
                 </div>
               </div>
@@ -524,9 +572,9 @@ function LandingPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { number: "50,000+", label: "Active Farmers", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z", color: "from-green-500 to-emerald-600" },
-              { number: "₹500Cr+", label: "Total Transactions", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", color: "from-emerald-500 to-teal-600" },
-              { number: "98%", label: "Satisfaction Rate", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", color: "from-teal-500 to-cyan-600" },
-              { number: "500+", label: "Markets Covered", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", color: "from-cyan-500 to-blue-600" }
+              { number: "₹500Cr+", label: "Total Transactions", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", color: "from-green-500 to-emerald-600" },
+              { number: "98%", label: "Satisfaction Rate", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", color: "from-green-500 to-emerald-600" },
+              { number: "500+", label: "Markets Covered", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", color: "from-green-500 to-emerald-600" }
             ].map((stat, index) => (
               <div key={index} className="stat-card group relative bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden">
                 <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500`}></div>
@@ -552,52 +600,56 @@ function LandingPage() {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">Powerful tools designed specifically for Indian farmers to maximize profits and minimize risks</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div 
+            className="overflow-x-auto scroll-smooth pb-4 scrollbar-hide cursor-grab active:cursor-grabbing" 
+            style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+          >
+            <div ref={featuresMarqueeRef} className="flex gap-8">
             {[
               {
                 title: "Live Market Prices",
                 description: "Real-time price updates from 500+ mandis across India. Get instant notifications when prices match your expectations.",
                 image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
-                gradient: "from-green-500 to-emerald-600"
+                
               },
               {
                 title: "Direct Buyer Access",
                 description: "Connect with verified wholesalers, retailers, and exporters directly. No middlemen, better prices guaranteed.",
                 image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
-                gradient: "from-emerald-500 to-teal-600"
+              
               },
               {
                 title: "AI Price Forecasting",
                 description: "Machine learning algorithms predict future prices based on weather, demand, and historical data with 94% accuracy.",
                 image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
-                gradient: "from-teal-500 to-cyan-600"
+                
               },
               {
                 title: "Expert Crop Advisory",
                 description: "Personalized recommendations from agricultural experts on what to grow, when to harvest, and how to maximize yield.",
                 image: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
-                gradient: "from-cyan-500 to-blue-600"
+                
               },
               {
                 title: "Instant Payments",
                 description: "Get paid within 24 hours of sale confirmation. Support for UPI, bank transfer, and digital wallets.",
                 image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-                gradient: "from-blue-500 to-indigo-600"
+                
               },
               {
                 title: "Offline Support",
                 description: "Works even with limited connectivity. Sync data when you're back online. Available in 12 regional languages.",
                 image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-                icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z",
-                gradient: "from-indigo-500 to-purple-600"
+                
               }
             ].map((feature, index) => (
-              <div key={index} className="feature-card group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100">
+              <div key={index} className="feature-card group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex-shrink-0 w-[400px]">
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
                   <img 
@@ -615,24 +667,93 @@ function LandingPage() {
                 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">{feature.title}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#36656B] transition-colors">{feature.title}</h3>
                   <p className="text-gray-600 leading-relaxed mb-4">{feature.description}</p>
-                  <a href="#" className="inline-flex items-center text-green-600 font-semibold group/link">
+                  {/* <a href="#" className="inline-flex items-center text-[#36656B] font-semibold group/link">
                     Learn more
                     <svg className="w-4 h-4 ml-2 group-hover/link:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
-                  </a>
+                  </a> */}
+                </div>
+              </div>
+            ))}
+            {[
+              {
+                title: "Live Market Prices",
+                description: "Real-time price updates from 500+ mandis across India. Get instant notifications when prices match your expectations.",
+                image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+
+               
+              },
+              {
+                title: "Direct Buyer Access",
+                description: "Connect with verified wholesalers, retailers, and exporters directly. No middlemen, better prices guaranteed.",
+                image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+
+              },
+              {
+                title: "AI Price Forecasting",
+                description: "Machine learning algorithms predict future prices based on weather, demand, and historical data with 94% accuracy.",
+                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                
+              },
+              {
+                title: "Expert Crop Advisory",
+                description: "Personalized recommendations from agricultural experts on what to grow, when to harvest, and how to maximize yield.",
+                image: "https://images.unsplash.com/photo-1574943320219-553eb213f72d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+           
+              },
+              {
+                title: "Instant Payments",
+                description: "Get paid within 24 hours of sale confirmation. Support for UPI, bank transfer, and digital wallets.",
+                image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+                
+              },
+              {
+                title: "Offline Support",
+                description: "Works even with limited connectivity. Sync data when you're back online. Available in 12 regional languages.",
+                image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+               
+              }
+            ].map((feature, index) => (
+              <div key={`duplicate-${index}`} className="feature-card group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 flex-shrink-0 w-[400px]">
+                {/* Image */}
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className={`absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#36656B] transition-colors">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed mb-4">{feature.description}</p>
+                  {/* <a href="#" className="inline-flex items-center text-[#36656B] font-semibold group/link">
+                    Learn more
+                    <svg className="w-4 h-4 ml-2 group-hover/link:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a> */}
                 </div>
               </div>
             ))}
           </div>
         </div>
+        </div>
       </section>
 
       {/* Benefits Section */}
       <section ref={benefitsRef} id="benefits" className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-emerald-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F0F8A4]/20 via-white to-[#DAD887]/20"></div>
         <div className="max-w-7xl mx-auto relative">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left - Benefits List */}
@@ -648,12 +769,12 @@ function LandingPage() {
                   { number: "03", title: "Data-Driven Decisions", description: "Make informed choices with AI-powered insights on market trends, weather patterns, and demand forecasts." },
                   { number: "04", title: "24/7 Expert Support", description: "Get help anytime with our dedicated support team available in Hindi, English, and 10 regional languages." }
                 ].map((benefit, index) => (
-                  <div key={index} className="benefit-item group flex gap-6 p-6 bg-white rounded-2xl border border-gray-100 hover:border-green-500 hover:shadow-xl transition-all duration-300 cursor-pointer">
-                    <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <div key={index} className="benefit-item group flex gap-6 p-6 bg-white rounded-2xl border border-gray-100 hover:border-[#75B06F] hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#36656B] to-[#75B06F] rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 group-hover:scale-110 transition-transform">
                       {benefit.number}
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">{benefit.title}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#36656B] transition-colors">{benefit.title}</h3>
                       <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
                     </div>
                   </div>
@@ -665,14 +786,14 @@ function LandingPage() {
             <div className="relative">
               {/* Main Visual Card */}
               <div className="visual-card bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#75B06F]/10 to-[#36656B]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 
                 <div className="relative">
                   {/* <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold mb-6">Success Metrics</span> */}
                   
                   <div className="flex items-end gap-4 mb-8">
-                    <span className="text-7xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">+35%</span>
-                    <svg className="w-12 h-12 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <span className="text-7xl font-bold bg-gradient-to-r from-[#36656B] to-[#75B06F] bg-clip-text text-transparent">+35%</span>
+                    <svg className="w-12 h-12 text-[#75B06F] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
@@ -692,7 +813,7 @@ function LandingPage() {
                         <img 
                           src={testimonial.image}
                           alt={testimonial.name}
-                          className="w-14 h-14 rounded-full object-cover border-2 border-green-500"
+                          className="w-14 h-14 rounded-full object-cover border-2 border-[#75B06F]"
                         />
                         <div className="flex-1">
                           <p className="text-gray-700 italic text-sm leading-relaxed mb-2">"{testimonial.quote}"</p>
@@ -746,36 +867,80 @@ function LandingPage() {
 
           <div className="relative">
             {/* Connection Line */}
-            <div className="hidden lg:block absolute top-32 left-0 right-0 h-1 bg-gradient-to-r from-green-200 via-emerald-300 to-teal-200 rounded-full"></div>
+            <div className="hidden lg:block absolute top-32 left-0 right-0 h-1 bg-gradient-to-r from-[#F0F8A4] via-[#DAD887] to-[#75B06F] rounded-full"></div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { step: "01", title: "Create Account", description: "Sign up with your phone number. Verify with OTP. Takes less than 2 minutes.", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
-                { step: "02", title: "List Your Crops", description: "Add your produce details with photos, quantity, and expected price range.", icon: "M12 6v6m0 0v6m0-6h6m-6 0H6" },
-                { step: "03", title: "Get Best Offers", description: "Receive multiple bids from verified buyers. Compare and negotiate.", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
-                { step: "04", title: "Get Paid Fast", description: "Accept the best offer and receive payment within 24 hours guaranteed.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" }
+                { step: "01", title: "Create Account", description: "Sign up with your phone number. Verify with OTP. Takes less than 2 minutes.", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", image: "https://media.istockphoto.com/id/1330214199/photo/indian-farmer-busy-using-mobile-phone-while-sitting-in-between-the-crop-seedlings-inside.jpg?s=612x612&w=0&k=20&c=PmGOwjZlQdOhETmjVwBoT4thL3mJn3VfEm5q9doj4aU=" },
+                { step: "02", title: "List Your Crops", description: "Add your produce details with photos, quantity, and expected price range.", icon: "M12 6v6m0 0v6m0-6h6m-6 0H6", image: "https://img.freepik.com/free-photo/african-man-harvesting-vegetables_23-2151441245.jpg" },
+                { step: "03", title: "Get Best Offers", description: "Receive multiple bids from verified buyers. Compare and negotiate.", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z", image: "https://t4.ftcdn.net/jpg/05/68/84/87/360_F_568848790_9B5VucFYGcQt2BgwaGmdwmcfraWrjMJY.jpg" },
+                { step: "04", title: "Get Paid Fast", description: "Accept the best offer and receive payment within 24 hours guaranteed.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", image: "https://www.shutterstock.com/shutterstock/videos/1105805017/thumb/12.jpg?ip=x480" }
               ].map((item, index) => (
-                <div key={index} className="step relative">
+                <div 
+                  key={index} 
+                  className="step relative h-[400px]" 
+                  style={{ perspective: '1000px' }}
+                  onMouseEnter={() => setFlippedCards(prev => {
+                    const newFlipped = [...prev];
+                    newFlipped[index] = true;
+                    return newFlipped;
+                  })}
+                  onMouseLeave={() => setFlippedCards(prev => {
+                    const newFlipped = [...prev];
+                    newFlipped[index] = false;
+                    return newFlipped;
+                  })}
+                >
                   {/* Connector for mobile */}
                   {index < 3 && (
-                    <div className="step-connector hidden md:block lg:hidden absolute -bottom-4 left-1/2 w-1 h-8 bg-gradient-to-b from-green-300 to-emerald-300 rounded-full origin-top"></div>
+                    <div className="step-connector hidden md:block lg:hidden absolute -bottom-4 left-1/2 w-1 h-8 bg-gradient-to-b from-[#75B06F] to-[#36656B] rounded-full origin-top"></div>
                   )}
                   
-                  <div className="relative bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 text-center group">
-                    {/* Step Number Badge */}
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg z-10">
-                      {item.step}
+                  {/* Step Number Badge - Outside flip container */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-br from-[#75B06F] to-[#36656B] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg z-20">
+                    {item.step}
+                  </div>
+
+                  {/* Flip Card Container */}
+                  <div 
+                    className="relative w-full h-full transition-transform duration-700 cursor-pointer"
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      transform: flippedCards[index] ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                    }}
+                  >
+                    {/* Front Side - Image */}
+                    <div 
+                      className="absolute inset-0 bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+                      style={{ backfaceVisibility: 'hidden' }}
+                    >
+                      <img 
+                        src={item.image} 
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
+                      </div>
                     </div>
-                    
-                    {/* Icon */}
-                    <div className="w-20 h-20 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 mt-4 group-hover:scale-110 transition-transform duration-300 border border-green-100">
-                      <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                      </svg>
+
+                    {/* Back Side - Description */}
+                    <div 
+                      className="absolute inset-0 bg-gradient-to-br from-[#36656B] to-[#75B06F] rounded-3xl shadow-lg border border-gray-100 p-8 flex flex-col items-center justify-center text-center"
+                      style={{ 
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)'
+                      }}
+                    >
+                      <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                        <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-4">{item.title}</h3>
+                      <p className="text-white/90 leading-relaxed text-lg">{item.description}</p>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -785,56 +950,12 @@ function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonial" className="py-24 px-6 bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img 
-            src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-            alt="Background"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-16">
-            {/* <span className="inline-block bg-white/10 text-green-300 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4 backdrop-blur-sm">Testimonials</span> */}
-            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 tracking-tight">Hear From Our Farmers</h2>
-            <p className="text-xl text-green-200">Real stories from real farmers who transformed their business</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={index}
-                className={`bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 transition-all duration-500 hover:bg-white/20 hover:scale-105 ${
-                  index === activeTestimonial ? 'ring-2 ring-green-400' : ''
-                }`}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <img 
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-green-400"
-                  />
-                  <div>
-                    <h4 className="font-bold text-white">{testimonial.name}</h4>
-                    <p className="text-green-300 text-sm">{testimonial.location}</p>
-                  </div>
-                </div>
-                <p className="text-white/80 italic leading-relaxed mb-4">"{testimonial.quote}"</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-green-300 text-sm font-medium">{testimonial.crop} Farmer</span>
-                  <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">{testimonial.increase}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Testimonials />
 
       {/* CTA Section */}
       <section className="py-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600"></div>
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#36656B] via-[#0a1109] to-[#36656B]"></div>
+        <div className="absolute inset-0 opacity-80">
           <img 
             src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
             alt="Background"
@@ -848,10 +969,10 @@ function LandingPage() {
         
         <div className="max-w-4xl mx-auto relative text-center">
           <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6 tracking-tight">Ready to Transform Your Farming Business?</h2>
-          <p className="text-xl text-green-100 mb-10 max-w-2xl mx-auto">Join 50,000+ farmers who are already earning more with AuraFarm. Start your free trial today.</p>
+          <p className="text-xl text-[#F0F8A4] mb-10 max-w-2xl mx-auto">Join 50,000+ farmers who are already earning more with AuraFarm. Start your free trial today.</p>
           
           <div className="flex flex-wrap gap-4 justify-center mb-8">
-            <button className="group flex items-center gap-3 bg-white text-green-600 px-10 py-5 rounded-2xl font-bold text-lg transition-all hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1">
+            <button className="group flex items-center gap-3 bg-[#F0F8A4] text-[#36656B] px-10 py-5 rounded-2xl font-bold text-lg transition-all hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-1">
               Get Started Free
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -865,7 +986,7 @@ function LandingPage() {
             </button>
           </div>
           
-          <p className="text-green-200 flex items-center justify-center gap-2">
+          <p className="text-[#DAD887] flex items-center justify-center gap-2">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
             </svg>
