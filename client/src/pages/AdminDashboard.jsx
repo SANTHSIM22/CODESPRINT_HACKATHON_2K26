@@ -1165,21 +1165,28 @@ function AdminDashboard() {
                   </div>
 
                   {/* News Articles Grid */}
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {cropNews.articles?.map((article, index) => (
-                      <div key={index} className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 overflow-hidden hover:shadow-lg hover:border-[#75B06F]/50 transition-all">
+                      <div key={index} className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 overflow-hidden hover:shadow-lg hover:border-[#75B06F]/50 transition-all flex flex-col">
                         {article.imageUrl && (
-                          <img src={article.imageUrl} alt={article.title} className="w-full h-40 object-cover" />
+                          <div className="relative h-48 overflow-hidden">
+                            <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
+                            <div className="absolute top-3 left-3">
+                              <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[#75B06F] rounded-lg text-xs font-semibold shadow-sm">{article.source}</span>
+                            </div>
+                          </div>
                         )}
-                        <div className="p-5">
+                        <div className="p-4 flex flex-col flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-1 bg-[#75B06F]/20 text-[#75B06F] rounded text-xs font-medium">{article.source}</span>
+                            {!article.imageUrl && (
+                              <span className="px-2 py-1 bg-[#75B06F]/20 text-[#75B06F] rounded text-xs font-medium">{article.source}</span>
+                            )}
                             <span className="text-xs text-[#36656B]/50">{new Date(article.publishedAt).toLocaleDateString()}</span>
                           </div>
-                          <h4 className="font-bold text-[#36656B] mb-2 line-clamp-2">{article.title}</h4>
-                          <p className="text-sm text-[#36656B]/70 line-clamp-3">{article.description}</p>
+                          <h4 className="font-bold text-[#36656B] mb-2 line-clamp-2 text-sm">{article.title}</h4>
+                          <p className="text-sm text-[#36656B]/70 line-clamp-2 flex-1">{article.description}</p>
                           {article.url && article.url !== '#' && (
-                            <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-[#75B06F] text-sm font-medium hover:underline">
+                            <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1 text-[#75B06F] text-sm font-medium hover:underline">
                               Read more
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
