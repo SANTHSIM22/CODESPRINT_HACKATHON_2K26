@@ -3,20 +3,21 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const authRoutes = require('./routes/auth');
+const farmerRoutes = require('./routes/farmer');
+const buyerRoutes = require('./routes/buyer');
+
 const app = express();
 
-// Middleware
+// Middleware - Increase payload limit for base64 images
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/codesprint_hackathon', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/codesprint_hackathon');
     console.log('MongoDB Connected Successfully');
   } catch (error) {
     console.error('MongoDB Connection Error:', error.message);
@@ -28,8 +29,12 @@ connectDB();
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Market Intelligence API' });
+  res.json({ message: 'Welcome to AuraFarm API' });
 });
+
+app.use('/api/auth', authRoutes);
+app.use('/api/farmer', farmerRoutes);
+app.use('/api/buyer', buyerRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
