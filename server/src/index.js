@@ -6,6 +6,8 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const farmerRoutes = require('./routes/farmer');
 const buyerRoutes = require('./routes/buyer');
+const adminRoutes = require('./routes/admin');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 
@@ -35,6 +37,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/buyer', buyerRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
