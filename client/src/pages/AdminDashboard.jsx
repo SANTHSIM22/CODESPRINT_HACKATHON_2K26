@@ -944,12 +944,12 @@ function AdminDashboard() {
                     {/* Timing & Quality Tips */}
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                       <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
-                        <p className="font-semibold text-yellow-900 mb-1">⏰ Timing Advice</p>
+                        <p className="font-semibold text-yellow-900 mb-1"> Timing Advice</p>
                         <p className="text-yellow-800">{priceInsightsData.selling_guidance?.timing_advice?.advice || 'N/A'}</p>
                         <p className="text-sm text-yellow-600 mt-1">{priceInsightsData.selling_guidance?.timing_advice?.reason || ''}</p>
                       </div>
                       <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
-                        <p className="font-semibold text-pink-900 mb-1">💎 Quality Tips</p>
+                        <p className="font-semibold text-pink-900 mb-1"> Quality Tips</p>
                         <p className="text-pink-800 text-sm">{priceInsightsData.selling_guidance?.quality_tips?.tip || 'N/A'}</p>
                         <p className="text-sm text-pink-600 mt-1">
                           Premium potential: {priceInsightsData.selling_guidance?.quality_tips?.premium_potential || 'N/A'}
@@ -1624,7 +1624,7 @@ function AdminDashboard() {
                     
                     <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
                       <p className="text-indigo-900 font-medium">
-                        💡 {analysisData.recommendation?.farmer_friendly_summary || analysisData.recommendation?.recommendation?.reasoning}
+                         {analysisData.recommendation?.farmer_friendly_summary || analysisData.recommendation?.recommendation?.reasoning}
                       </p>
                     </div>
                     
@@ -1823,7 +1823,7 @@ function AdminDashboard() {
                           </div>
                           <div className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-blue-600">📊</span>
+                              <span className="text-blue-600"></span>
                               <h4 className="font-semibold text-gray-900">Expected</h4>
                               <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full ml-auto">Most Likely</span>
                             </div>
@@ -1847,7 +1847,7 @@ function AdminDashboard() {
                   {analysisData.recommendation?.action_plan && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                       <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-4 border-b border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-900">📋 Action Plan</h3>
+                        <h3 className="text-lg font-bold text-gray-900"> Action Plan</h3>
                       </div>
                       <div className="p-6 space-y-4">
                         <div className="flex items-start gap-3">
@@ -1914,11 +1914,11 @@ function AdminDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Comprehensive Market Analysis</h3>
                   <p className="text-gray-500 mb-4">Get AI-powered recommendations by combining insights from 5 specialized agents</p>
                   <div className="flex flex-wrap justify-center gap-2 text-xs">
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">📈 Price Analysis</span>
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">📰 News Impact</span>
-                    <span className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full">🌤️ Weather Analysis</span>
-                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full">🔍 Market Research</span>
-                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">🤖 AI Synthesis</span>
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">Price Analysis</span>
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full"> News Impact</span>
+                    <span className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full"> Weather Analysis</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full"> Market Research</span>
+                    <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full"> AI Synthesis</span>
                   </div>
                 </div>
               )}

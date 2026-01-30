@@ -228,7 +228,7 @@ function FarmerDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#75B06F] border-t-transparent mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading dashboard...</p>
         </div>
       </div>
@@ -244,12 +244,12 @@ function FarmerDashboard() {
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute inset-0 bg-green-500 rounded-xl blur-lg opacity-30"></div>
+                <div className="absolute inset-0 bg-[#75B06F] rounded-xl blur-lg opacity-30"></div>
                 <svg className="w-10 h-10 relative" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L13.09 8.26L19 6L14.74 10.91L21 12L14.74 13.09L19 18L13.09 15.74L12 22L10.91 15.74L5 18L9.26 13.09L3 12L9.26 10.91L5 6L10.91 8.26L12 2Z" fill="#16A34A"/>
+                  <path d="M12 2L13.09 8.26L19 6L14.74 10.91L21 12L14.74 13.09L19 18L13.09 15.74L12 22L10.91 15.74L5 18L9.26 13.09L3 12L9.26 10.91L5 6L10.91 8.26L12 2Z" fill="#75B06F"/>
                 </svg>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">AuraFarm</span>
+              <span className="text-xl font-bold text-[#36656B]">AuraFarm</span>
             </div>
             <button 
               onClick={() => setSidebarOpen(false)}
@@ -264,7 +264,7 @@ function FarmerDashboard() {
           {/* User Profile */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              <div className="w-12 h-12 bg-[#36656B] rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                 {user.name.charAt(0).toUpperCase()}
               </div>
               <div>
@@ -291,7 +291,7 @@ function FarmerDashboard() {
               { id: 'orders', label: 'Orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
               { id: 'price-insights', label: 'Price Insights', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
               { id: 'analysis-reports', label: 'Analysis & Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-              { id: 'messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', badge: 3 },
+              { id: 'messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',  },
               { id: 'settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
             ].map((item) => (
               <button
@@ -299,8 +299,8 @@ function FarmerDashboard() {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                   activeTab === item.id
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-[#75B06F] text-white shadow-lg'
+                    : 'text-[#36656B] hover:bg-[#F0F8A4]'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -355,23 +355,23 @@ function FarmerDashboard() {
                   {activeTab === 'messages' && 'Messages'}
                   {activeTab === 'settings' && 'Settings'}
                 </h1>
-                <p className="text-sm text-gray-500">Manage your farm products and sales</p>
+                <p className="text-sm text-gray-500">Get comprehensive price recommendations using 5 AI agents analyzing prices, news, weather, and market trends</p>
               </div>
             </div>
 
             {/* Stats Summary */}
             <div className="hidden md:flex items-center gap-6">
-              <div className="text-center px-4 py-2 bg-green-50 rounded-xl">
-                <p className="text-2xl font-bold text-green-600">{stats.totalListings}</p>
-                <p className="text-xs text-gray-500">Products</p>
+              <div className="text-center px-4 py-2 bg-[#F0F8A4] rounded-xl">
+                <p className="text-2xl font-bold text-[#36656B]">{stats.totalListings}</p>
+                <p className="text-xs text-gray-600">Products</p>
               </div>
-              <div className="text-center px-4 py-2 bg-blue-50 rounded-xl">
-                <p className="text-2xl font-bold text-blue-600">{stats.activeOffers}</p>
-                <p className="text-xs text-gray-500">Offers</p>
+              <div className="text-center px-4 py-2 bg-[#DAD887] rounded-xl">
+                <p className="text-2xl font-bold text-[#36656B]">{stats.activeOffers}</p>
+                <p className="text-xs text-gray-600">Offers</p>
               </div>
-              <div className="text-center px-4 py-2 bg-purple-50 rounded-xl">
-                <p className="text-2xl font-bold text-purple-600">₹{stats.totalRevenue.toLocaleString()}</p>
-                <p className="text-xs text-gray-500">Revenue</p>
+              <div className="text-center px-4 py-2 bg-[#75B06F] rounded-xl">
+                <p className="text-2xl font-bold text-white">₹{stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-xs text-white/90">Revenue</p>
               </div>
             </div>
           </div>
@@ -383,7 +383,7 @@ function FarmerDashboard() {
           {message.text && (
             <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fade-in ${
               message.type === 'success' 
-                ? 'bg-green-50 text-green-800 border border-green-200' 
+                ? 'bg-[#F0F8A4] text-[#36656B] border border-[#DAD887]' 
                 : 'bg-red-50 text-red-800 border border-red-200'
             }`}>
               {message.type === 'success' ? (
@@ -414,7 +414,7 @@ function FarmerDashboard() {
                 {/* Product Image Upload */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#75B06F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Product Image
@@ -427,7 +427,7 @@ function FarmerDashboard() {
                       onClick={() => setUploadType('upload')}
                       className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                         uploadType === 'upload'
-                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+                          ? 'bg-[#75B06F] text-white shadow-lg'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -443,7 +443,7 @@ function FarmerDashboard() {
                       onClick={() => setUploadType('url')}
                       className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                         uploadType === 'url'
-                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+                          ? 'bg-[#75B06F] text-white shadow-lg'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -473,12 +473,12 @@ function FarmerDashboard() {
                               alt="Preview"
                               className="max-h-64 mx-auto rounded-lg shadow-lg object-cover"
                             />
-                            <p className="text-sm text-green-600 font-semibold group-hover:underline">Click to change image</p>
+                            <p className="text-sm text-[#75B06F] font-semibold group-hover:underline">Click to change image</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-20 h-20 mx-auto bg-[#F0F8A4] rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <svg className="w-10 h-10 text-[#75B06F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                             </div>
@@ -497,7 +497,7 @@ function FarmerDashboard() {
                         placeholder="https://example.com/image.jpg"
                         value={productForm.imageUrl}
                         onChange={handleImageUrlChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all"
                       />
                       {imagePreview && (
                         <div className="relative">
@@ -516,7 +516,7 @@ function FarmerDashboard() {
                 {/* Product Details */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#75B06F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     Product Details
@@ -532,7 +532,7 @@ function FarmerDashboard() {
                         name="name"
                         value={productForm.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all"
                         placeholder="e.g., Organic Tomatoes"
                         required
                       />
@@ -546,7 +546,7 @@ function FarmerDashboard() {
                         name="category"
                         value={productForm.category}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all appearance-none bg-white"
                         required
                       >
                         <option value="">Select category</option>
@@ -570,7 +570,7 @@ function FarmerDashboard() {
                           name="quantity"
                           value={productForm.quantity}
                           onChange={handleInputChange}
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all"
                           placeholder="100"
                           required
                           min="0"
@@ -580,7 +580,7 @@ function FarmerDashboard() {
                           name="unit"
                           value={productForm.unit}
                           onChange={handleInputChange}
-                          className="w-28 px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                          className="w-28 px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all appearance-none bg-white"
                         >
                           <option value="kg">kg</option>
                           <option value="quintal">quintal</option>
@@ -602,7 +602,7 @@ function FarmerDashboard() {
                           name="price"
                           value={productForm.price}
                           onChange={handleInputChange}
-                          className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all"
                           placeholder="50"
                           required
                           min="0"
@@ -650,7 +650,7 @@ function FarmerDashboard() {
                       value={productForm.description}
                       onChange={handleInputChange}
                       rows="4"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent resize-none transition-all"
                       placeholder="Describe your product quality, farming practices, certifications, etc."
                     ></textarea>
                   </div>
@@ -661,7 +661,7 @@ function FarmerDashboard() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-green-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#75B06F] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#36656B] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -712,7 +712,7 @@ function FarmerDashboard() {
             <div>
               {productsLoading ? (
                 <div className="flex items-center justify-center py-20">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#75B06F] border-t-transparent"></div>
                 </div>
               ) : products.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200">
@@ -725,7 +725,7 @@ function FarmerDashboard() {
                   <p className="text-gray-500 mb-6">Start by adding your first product listing</p>
                   <button
                     onClick={() => setActiveTab('add-product')}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+                    className="inline-flex items-center gap-2 bg-[#75B06F] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#36656B] transition-all"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -764,7 +764,7 @@ function FarmerDashboard() {
                       <div className="p-5">
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="font-bold text-gray-900 text-lg">{product.name}</h3>
-                          <span className="text-green-600 font-bold">₹{product.price}/{product.unit}</span>
+                          <span className="text-[#75B06F] font-bold">₹{product.price}/{product.unit}</span>
                         </div>
                         <p className="text-sm text-gray-500 mb-3 capitalize">{product.category}</p>
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
@@ -803,8 +803,8 @@ function FarmerDashboard() {
           {/* Orders Tab */}
           {activeTab === 'orders' && (
             <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="w-24 h-24 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-24 h-24 mx-auto mb-6 bg-[#F0F8A4] rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 text-[#75B06F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
@@ -817,15 +817,15 @@ function FarmerDashboard() {
           {activeTab === 'price-insights' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl p-6 text-white">
+              {/* <div className="bg-[#75B06F] rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <h2 className="text-2xl font-bold">Price Insights</h2>
                 </div>
-                <p className="text-green-100">Get real-time mandi prices, market analysis and selling recommendations for your crops</p>
-              </div>
+                <p className="text-white/90">Get real-time mandi prices, market analysis and selling recommendations for </p>
+              </div> */}
 
               {/* Search Form */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -883,7 +883,7 @@ function FarmerDashboard() {
                   <button
                     type="submit"
                     disabled={priceInsightsLoading || !priceInsightsCrop.trim() || !priceInsightsLocation.trim()}
-                    className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full md:w-auto px-8 py-3 bg-[#75B06F] text-white font-semibold rounded-xl hover:bg-[#36656B] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {priceInsightsLoading ? (
                       <>
@@ -1020,12 +1020,12 @@ function FarmerDashboard() {
                     {/* Timing & Quality Tips */}
                     <div className="grid md:grid-cols-2 gap-4 mt-4">
                       <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
-                        <p className="font-semibold text-yellow-900 mb-1">⏰ Timing Advice</p>
+                        <p className="font-semibold text-yellow-900 mb-1"> Timing Advice</p>
                         <p className="text-yellow-800">{priceInsightsData.selling_guidance?.timing_advice?.advice || 'N/A'}</p>
                         <p className="text-sm text-yellow-600 mt-1">{priceInsightsData.selling_guidance?.timing_advice?.reason || ''}</p>
                       </div>
                       <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
-                        <p className="font-semibold text-pink-900 mb-1">💎 Quality Tips</p>
+                        <p className="font-semibold text-pink-900 mb-1"> Quality Tips</p>
                         <p className="text-pink-800 text-sm">{priceInsightsData.selling_guidance?.quality_tips?.tip || 'N/A'}</p>
                         <p className="text-sm text-pink-600 mt-1">
                           Premium potential: {priceInsightsData.selling_guidance?.quality_tips?.premium_potential || 'N/A'}
@@ -1075,7 +1075,7 @@ function FarmerDashboard() {
                         <p className={`font-bold text-lg ${
                           priceInsightsData.market_intelligence?.arbitrage_opportunity?.exists ? 'text-green-600' : 'text-gray-600'
                         }`}>
-                          {priceInsightsData.market_intelligence?.arbitrage_opportunity?.exists ? 'Yes ✓' : 'No'}
+                          {priceInsightsData.market_intelligence?.arbitrage_opportunity?.exists ? 'Yes' : 'No'}
                         </p>
                         <p className="text-xs text-gray-500">
                           {priceInsightsData.market_intelligence?.arbitrage_opportunity?.potential_gain || ''}
@@ -1157,7 +1157,7 @@ function FarmerDashboard() {
           {activeTab === 'ask-ai' && (
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Header */}
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white">
+              {/* <div className="bg-gradient-to-r bg-[#75B06F] rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -1165,7 +1165,7 @@ function FarmerDashboard() {
                   <h2 className="text-2xl font-bold">AI Price Assistant</h2>
                 </div>
                 <p className="text-green-100">Ask about current crop prices, market trends, and get AI-powered insights</p>
-              </div>
+              </div> */}
 
               {/* Search Box */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -1198,7 +1198,7 @@ function FarmerDashboard() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="e.g., What is the price of wheat in Punjab?"
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
                     />
                     <button
                       type="submit"
@@ -1377,7 +1377,7 @@ function FarmerDashboard() {
           {activeTab === 'weather' && (
             <div className="max-w-4xl mx-auto space-y-6">
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-6 text-white">
+              {/* <div className="bg-gradient-to-r bg-[#36656B] rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
@@ -1385,7 +1385,7 @@ function FarmerDashboard() {
                   <h2 className="text-2xl font-bold">Weather Analysis</h2>
                 </div>
                 <p className="text-blue-100">Get AI-powered weather insights for your crops and farming decisions</p>
-              </div>
+              </div> */}
 
               {/* Input Form */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -1430,14 +1430,14 @@ function FarmerDashboard() {
                         value={weatherLocation}
                         onChange={(e) => setWeatherLocation(e.target.value)}
                         placeholder="e.g., Punjab, Maharashtra"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
                       />
                     </div>
                   </div>
                   <button
                     type="submit"
                     disabled={weatherLoading || !weatherCrop.trim() || !weatherLocation.trim()}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white font-semibold rounded-xl hover:from-[#36656B] hover:to-[#75B06F] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {weatherLoading ? (
                       <>
@@ -1619,7 +1619,7 @@ function FarmerDashboard() {
           {activeTab === 'analysis-reports' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
+              {/* <div className="bg-gradient-to-r bg-[#36656B] rounded-2xl p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1627,30 +1627,31 @@ function FarmerDashboard() {
                   <h2 className="text-2xl font-bold">AI-Powered Market Analysis</h2>
                 </div>
                 <p className="text-indigo-100">Get comprehensive price recommendations using 5 AI agents analyzing prices, news, weather, and market trends</p>
-              </div>
+              </div> */}
 
               {/* Agent Status Indicators */}
               <div className="grid grid-cols-5 gap-2">
                 {[
-                  { id: 'price', name: 'Price Agent', icon: '💰' },
-                  { id: 'news', name: 'News Agent', icon: '📰' },
-                  { id: 'weather', name: 'Weather Agent', icon: '🌤️' },
-                  { id: 'search', name: 'Search Agent', icon: '🔍' },
-                  { id: 'analytics', name: 'Analytics Agent', icon: '🤖' }
+                  { id: 'price', name: 'Price Agent', icon: '' },
+                  { id: 'news', name: 'News Agent', icon: '' },
+                  { id: 'weather', name: 'Weather Agent', icon: '' },
+                  { id: 'search', name: 'Search Agent', icon: '' },
+                  { id: 'analytics', name: 'Analytics Agent', icon: '' }
                 ].map((agent) => (
                   <div
                     key={agent.id}
-                    className={`p-3 rounded-xl text-center transition-all ${
+                    className={`p-3 rounded-xl transition-all ${
                       activeAgents.includes(agent.id)
                         ? 'bg-green-100 border-2 border-green-500'
                         : 'bg-gray-100 border-2 border-gray-200'
                     }`}
                   >
-                    <span className="text-2xl">{agent.icon}</span>
-                    <p className="text-xs font-medium mt-1">{agent.name}</p>
-                    {activeAgents.includes(agent.id) && (
-                      <span className="text-xs text-green-600">✓ Active</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {activeAgents.includes(agent.id) && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-green-600 border-t-transparent flex-shrink-0"></div>
+                      )}
+                      <p className="text-xs font-medium">{agent.name}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1682,6 +1683,7 @@ function FarmerDashboard() {
                     const response = await axios.post('http://localhost:5000/api/analyze', analysisForm);
                     if (response.data.success) {
                       setAnalysisData(response.data);
+                      setActiveAgents([]);
                     } else {
                       setAnalysisError(response.data.error || 'Analysis failed');
                     }
@@ -1770,7 +1772,7 @@ function FarmerDashboard() {
                   <button
                     type="submit"
                     disabled={analysisLoading || !analysisForm.cropType || !analysisForm.location}
-                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-gradient-to-r bg-[#75B06F] text-white font-bold rounded-xl  transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
                     {analysisLoading ? (
                       <>
@@ -1850,7 +1852,7 @@ function FarmerDashboard() {
                     
                     <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
                       <p className="text-indigo-900 font-medium">
-                        💡 {analysisData.data.recommendation?.farmer_friendly_summary || analysisData.data.recommendation?.recommendation?.reasoning}
+                         {analysisData.data.recommendation?.farmer_friendly_summary || analysisData.data.recommendation?.recommendation?.reasoning}
                       </p>
                     </div>
                     
@@ -1866,8 +1868,8 @@ function FarmerDashboard() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div className={`h-2 rounded-full ${
-                          analysisData.data.recommendation?.recommendation?.confidence === 'high' ? 'bg-green-500 w-4/5' :
-                          analysisData.data.recommendation?.recommendation?.confidence === 'medium' ? 'bg-yellow-500 w-3/5' : 'bg-red-500 w-2/5'
+                          analysisData.data.recommendation?.recommendation?.confidence === 'high' ? 'bg-[#75B06F] w-4/5' :
+                          analysisData.data.recommendation?.recommendation?.confidence === 'medium' ? 'bg-[#F0F804] w-3/5' : 'bg-red-500 w-2/5'
                         }`}></div>
                       </div>
                     </div>
@@ -1878,7 +1880,7 @@ function FarmerDashboard() {
                     {analysisData.data.agentOutputs?.priceData && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <span className="text-2xl">💰</span> 
+                          <span className="text-2xl"></span> 
                           {analysisData.data.agentOutputs.priceData.data_source === 'AI_ESTIMATE' ? 'AI Price Estimates' : 'Mandi Price Data'}
                           {analysisData.data.agentOutputs.priceData.data_source === 'AI_ESTIMATE' && (
                             <span className="ml-auto px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-800">AI ESTIMATE</span>
@@ -1908,8 +1910,8 @@ function FarmerDashboard() {
                                 analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'rising' ? 'bg-green-100 text-green-700' :
                                 analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'falling' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
                               }`}>
-                                {analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'rising' ? '📈 Rising' :
-                                 analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'falling' ? '📉 Falling' : '➡️ Stable'}
+                                {analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'rising' ? ' Rising' :
+                                 analysisData.data.agentOutputs.priceData.ai_estimated_prices.price_trend === 'falling' ? ' Falling' : ' Stable'}
                               </span>
                               <span className="ml-2 text-gray-500">Confidence: {analysisData.data.agentOutputs.priceData.ai_estimated_prices.confidence}</span>
                             </div>
@@ -1963,7 +1965,7 @@ function FarmerDashboard() {
                     {analysisData.data.agentOutputs?.newsAnalysis && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <span className="text-2xl">📰</span> News Analysis
+                          News Analysis
                           <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${
                             analysisData.data.agentOutputs.newsAnalysis.overall_sentiment === 'bullish' ? 'bg-green-100 text-green-800' :
                             analysisData.data.agentOutputs.newsAnalysis.overall_sentiment === 'bearish' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
@@ -1988,7 +1990,7 @@ function FarmerDashboard() {
                     {analysisData.data.agentOutputs?.weatherAnalysis && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <span className="text-2xl">🌤️</span> Weather Impact
+                          <span className="text-2xl"></span> Weather Impact
                         </h4>
                         <div className="grid grid-cols-3 gap-3 mb-4">
                           <div className="text-center p-2 bg-blue-50 rounded-lg">
@@ -2014,7 +2016,7 @@ function FarmerDashboard() {
                     {analysisData.data.agentOutputs?.searchInsights && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                         <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          <span className="text-2xl">🔍</span> Market Intelligence
+                          <span className="text-2xl"></span> Market Intelligence
                           <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${
                             analysisData.data.agentOutputs.searchInsights.market_sentiment === 'bullish' ? 'bg-green-100 text-green-800' :
                             analysisData.data.agentOutputs.searchInsights.market_sentiment === 'bearish' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
@@ -2040,7 +2042,7 @@ function FarmerDashboard() {
                   <div className="grid md:grid-cols-2 gap-6">
                     {analysisData.data.recommendation?.key_factors && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-bold text-gray-900 mb-4">📊 Key Factors</h4>
+                        <h4 className="font-bold text-gray-900 mb-4"> Key Factors</h4>
                         <div className="space-y-3">
                           {analysisData.data.recommendation.key_factors.map((factor, i) => (
                             <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
@@ -2062,7 +2064,7 @@ function FarmerDashboard() {
 
                     {analysisData.data.recommendation?.scenarios && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-bold text-gray-900 mb-4">📈 Price Scenarios</h4>
+                        <h4 className="font-bold text-gray-900 mb-4"> Price Scenarios</h4>
                         <div className="space-y-3">
                           {analysisData.data.recommendation.scenarios.optimistic && (
                             <div className="p-3 bg-green-50 rounded-lg border border-green-200">
@@ -2103,18 +2105,18 @@ function FarmerDashboard() {
                   <div className="grid md:grid-cols-2 gap-6">
                     {analysisData.data.recommendation?.action_plan && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-bold text-gray-900 mb-4">📋 Action Plan</h4>
+                        <h4 className="font-bold text-gray-900 mb-4"> Action Plan</h4>
                         <div className="space-y-3">
                           <div className="p-3 bg-yellow-50 rounded-lg">
-                            <p className="text-sm font-medium text-yellow-800">⚡ Immediate Steps</p>
+                            <p className="text-sm font-medium text-yellow-800"> Immediate Steps</p>
                             <p className="text-sm text-yellow-700">{analysisData.data.recommendation.action_plan.immediate_steps}</p>
                           </div>
                           <div className="p-3 bg-blue-50 rounded-lg">
-                            <p className="text-sm font-medium text-blue-800">👁️ Monitor</p>
+                            <p className="text-sm font-medium text-blue-800"> Monitor</p>
                             <p className="text-sm text-blue-700">{analysisData.data.recommendation.action_plan.monitoring}</p>
                           </div>
                           <div className="p-3 bg-purple-50 rounded-lg">
-                            <p className="text-sm font-medium text-purple-800">🔔 Triggers</p>
+                            <p className="text-sm font-medium text-purple-800">Triggers</p>
                             <p className="text-sm text-purple-700">{analysisData.data.recommendation.action_plan.triggers}</p>
                           </div>
                         </div>
@@ -2123,7 +2125,7 @@ function FarmerDashboard() {
 
                     {analysisData.data.recommendation?.risk_factors && (
                       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-bold text-gray-900 mb-4">⚠️ Risk Factors</h4>
+                        <h4 className="font-bold text-gray-900 mb-4">Risk Factors</h4>
                         <ul className="space-y-2">
                           {analysisData.data.recommendation.risk_factors.map((risk, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
@@ -2218,7 +2220,7 @@ function FarmerDashboard() {
                       />
                     </div>
                   </div>
-                  <button className="mt-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+                  <button className="mt-4 bg-gradient-to-r  bg-[#75B06F] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
                     Save Changes
                   </button>
                 </div>
