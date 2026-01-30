@@ -1,8 +1,23 @@
 import './App.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import FarmerDashboard from './pages/FarmerDashboard'
+import BuyerDashboard from './pages/BuyerDashboard'
 
 function App() {
-  return <LandingPage />
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+        <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App

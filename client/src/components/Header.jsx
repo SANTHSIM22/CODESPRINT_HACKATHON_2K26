@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
+          <Link to="/" className="flex items-center gap-3 group cursor-pointer">
             <div className="relative">
               <div className="absolute inset-0 bg-green-500 rounded-xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
               <svg className="w-10 h-10 relative transform group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="none">
@@ -31,7 +32,7 @@ function Header() {
               </svg>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">AuraFarm</span>
-          </div>
+          </Link>
           
           <ul className="hidden lg:flex items-center gap-8">
             {['Features', 'Benefits', 'How It Works', 'Testimonial'].map((item, index) => (
@@ -53,13 +54,13 @@ function Header() {
           </ul>
 
           <div className="hidden lg:flex items-center gap-4">
-            <button className="text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2">
+            <Link to="/login" className="text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2">
               Log In
-            </button>
-            <button className="relative group bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5">
+            </Link>
+            <Link to="/signup" className="relative group bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5">
               <span className="relative z-10">Get Started Free</span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -98,12 +99,12 @@ function Header() {
                 </li>
               ))}
               <li className="px-6 py-3 space-y-2">
-                <button className="w-full text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
+                <Link to="/login" className="block w-full text-center text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
                   Log In
-                </button>
-                <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold">
+                </Link>
+                <Link to="/signup" className="block w-full text-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold">
                   Get Started Free
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
