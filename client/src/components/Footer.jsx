@@ -1,6 +1,17 @@
 import React from 'react';
+import twitterIcon from '../assets/twitter.png';
+import linkedinIcon from '../assets/linkedin.png';
+import instagramIcon from '../assets/instagram.png';
+import discordIcon from '../assets/discord.png';
 
 function Footer() {
+  const socialLinks = [
+    { name: 'Twitter', icon: twitterIcon, url: '#' },
+    { name: 'LinkedIn', icon: linkedinIcon, url: '#' },
+    { name: 'Instagram', icon: instagramIcon, url: '#' },
+    { name: 'Discord', icon: discordIcon, url: '#' }
+  ];
+
   return (
     <footer className="bg-gray-900 text-white pt-24 pb-12 px-6">
       <div className="max-w-7xl mx-auto">
@@ -14,12 +25,9 @@ function Footer() {
             </div>
             <p className="text-gray-400 mb-8 leading-relaxed max-w-sm">Empowering Indian farmers with technology, market access, and fair prices for a sustainable agricultural future.</p>
             <div className="flex gap-4">
-              {['twitter', 'facebook', 'instagram', 'youtube', 'linkedin'].map((social) => (
-                <a key={social} href="#" className="w-12 h-12 bg-gray-800 hover:bg-green-600 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110">
-                  <span className="sr-only">{social}</span>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10z"/>
-                  </svg>
+              {socialLinks.map((social) => (
+                <a key={social.name} href={social.url} className="w-12 h-12 bg-gray-800 hover:bg-green-600 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 p-2.5">
+                  <img src={social.icon} alt={social.name} className="w-full h-full object-contain" />
                 </a>
               ))}
             </div>
@@ -45,10 +53,10 @@ function Footer() {
         </div>
 
         <div className="pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-gray-500">2024 AuraFarm. All rights reserved. Made with love for Indian Farmers.</p>
+          <p className="text-gray-500  ali" >2026 AuraFarm. All rights reserved. Made with love for Indian Farmers.</p>
           <div className="flex items-center gap-6">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1200px-Stripe_Logo%2C_revised_2016.svg.png" alt="Stripe" className="h-6 opacity-50 hover:opacity-100 transition-opacity" onError={(e) => e.target.style.display='none'} />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/1200px-UPI-Logo-vector.svg.png" alt="UPI" className="h-6 opacity-50 hover:opacity-100 transition-opacity" onError={(e) => e.target.style.display='none'} />
+            {/* <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1200px-Stripe_Logo%2C_revised_2016.svg.png" alt="Stripe" className="h-6 opacity-50 hover:opacity-100 transition-opacity" onError={(e) => e.target.style.display='none'} /> */}
+            {/* <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/1200px-UPI-Logo-vector.svg.png" alt="UPI" className="h-6 opacity-50 hover:opacity-100 transition-opacity" onError={(e) => e.target.style.display='none'} /> */}
           </div>
         </div>
       </div>

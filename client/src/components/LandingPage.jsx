@@ -517,7 +517,7 @@ function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-white via-green-50/30 to-white"></div>
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-16">
-            <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Our Impact</span>
+            {/* <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Our Impact</span> */}
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight">Transforming Agriculture Across India</h2>
           </div>
 
@@ -547,7 +547,7 @@ function LandingPage() {
       <section ref={featuresRef} id="features" className="py-24 px-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Features</span>
+            {/* <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Features</span> */}
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">Everything You Need to Succeed</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">Powerful tools designed specifically for Indian farmers to maximize profits and minimize risks</p>
           </div>
@@ -637,7 +637,7 @@ function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             {/* Left - Benefits List */}
             <div>
-              <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Why Choose Us</span>
+              {/* <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Why Choose Us</span> */}
               <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">Why 50,000+ Farmers Trust AuraFarm</h2>
               <p className="text-xl text-gray-600 mb-12">Join the revolution in agricultural commerce with tools designed for your success</p>
 
@@ -653,7 +653,7 @@ function LandingPage() {
                       {benefit.number}
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">{benefit.title}</h4>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">{benefit.title}</h3>
                       <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
                     </div>
                   </div>
@@ -668,7 +668,7 @@ function LandingPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 
                 <div className="relative">
-                  <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold mb-6">Success Metrics</span>
+                  {/* <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold mb-6">Success Metrics</span> */}
                   
                   <div className="flex items-end gap-4 mb-8">
                     <span className="text-7xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">+35%</span>
@@ -734,10 +734,12 @@ function LandingPage() {
       </section>
 
       {/* How It Works */}
+      
       <section ref={stepsRef} id="how-it-works" className="py-24 px-6 bg-gradient-to-b from-white to-gray-50">
+       
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Simple Process</span>
+            {/* <span className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">Simple Process</span> */}
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 tracking-tight">Start Selling in 4 Easy Steps</h2>
             <p className="text-xl text-gray-600">From signup to payment, we've made everything simple and fast</p>
           </div>
@@ -783,7 +785,7 @@ function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 px-6 bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 relative overflow-hidden">
+      <section id="testimonial" className="py-24 px-6 bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <img 
             src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
@@ -794,7 +796,7 @@ function LandingPage() {
         
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-16">
-            <span className="inline-block bg-white/10 text-green-300 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4 backdrop-blur-sm">Testimonials</span>
+            {/* <span className="inline-block bg-white/10 text-green-300 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4 backdrop-blur-sm">Testimonials</span> */}
             <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6 tracking-tight">Hear From Our Farmers</h2>
             <p className="text-xl text-green-200">Real stories from real farmers who transformed their business</p>
           </div>

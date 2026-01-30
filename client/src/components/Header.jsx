@@ -34,11 +34,16 @@ function Header() {
           </div>
           
           <ul className="hidden lg:flex items-center gap-8">
-            {['Features', 'Benefits', 'How It Works', 'Pricing', 'Contact'].map((item, index) => (
+            {['Features', 'Benefits', 'How It Works', 'Testimonial'].map((item, index) => (
               <li key={index}>
                 <a 
-                  href={`#${item.toLowerCase().replace(' ', '-')}`} 
+                  href={`#${item.toLowerCase().replace(/ /g, '-')}`} 
                   className="relative text-gray-600 hover:text-green-600 font-medium transition-colors group py-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const id = item.toLowerCase().replace(/ /g, '-');
+                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
                 >
                   {item}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-300"></span>
@@ -76,12 +81,17 @@ function Header() {
         {isMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white shadow-xl border-t">
             <ul className="py-4">
-              {['Features', 'Benefits', 'How It Works', 'Pricing', 'Contact'].map((item, index) => (
+              {['Features', 'Benefits', 'How It Works', 'Testimonial'].map((item, index) => (
                 <li key={index}>
                   <a 
-                    href={`#${item.toLowerCase().replace(' ', '-')}`} 
+                    href={`#${item.toLowerCase().replace(/ /g, '-')}`} 
                     className="block px-6 py-3 text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const id = item.toLowerCase().replace(/ /g, '-');
+                      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      setIsMenuOpen(false);
+                    }}
                   >
                     {item}
                   </a>
