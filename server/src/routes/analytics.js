@@ -3,7 +3,10 @@ const router = express.Router();
 const analyticsController = require('../controllers/analyticsController');
 const authMiddleware = require('../middleware/auth');
 
-// All routes require authentication
+// Analyze endpoint - NO AUTH required for public access
+router.post('/analyze', analyticsController.analyze);
+
+// Protected routes require authentication
 router.use(authMiddleware);
 
 // Get Mandi prices with filters

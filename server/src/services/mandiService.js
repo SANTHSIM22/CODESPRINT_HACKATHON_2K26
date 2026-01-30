@@ -97,6 +97,114 @@ const getMandiPrices = async (filters = {}) => {
 };
 
 /**
+ * Fetch ALL records from Mandi API using pagination
+ * @param {Object} filters - Query filters (same as getMandiPrices)
+ * @param {number} recordsPerPage - Records per page (default: 10, max recommended: 100)
+ * @returns {Promise<Object>} All Mandi price data
+ */
+const getAllMandiPrices = async (filters = {}, recordsPerPage = 100) => {
+  try {
+    let allRecords = [];
+    let offset = 0;
+    let totalRecords = 0;
+    let hasMoreData = true;
+    let pageCount = 0;
+    const MAX_PAGES = 500; // Safety brake: prevent infinite loops (500 * 100 = 50,000 records max)
+
+    console.log('Starting pagination fetch...');
+
+    while (hasMoreData && pageCount < MAX_PAGES) {
+      pageCount++;
+      
+      const params = {
+        'api-key': API_KEY,
+        format: 'json',
+        limit: recordsPerPage, // Use a higher number here (e.g., 100) for faster fetching
+        offset: offset
+      };
+
+      // Add filters dynamically
+      const filterKeys = ['state', 'district', 'commodity', 'market', 'variety', 'grade'];
+      filterKeys.forEach(key => {
+        if (filters[key]) {
+          // Note: Check if your API specifically needs 'state.keyword' or just 'state'
+          const paramName = key === 'state' ? 'filters[state.keyword]' : `filters[${key}]`;
+          params[paramName] = filters[key];
+        }
+      });
+
+      console.log(`Fetching batch ${pageCount}: Offset ${offset} (Limit: ${recordsPerPage})...`);
+
+      const response = await axios.get(MANDI_API_BASE_URL, {
+        params,
+        timeout: 30000 // Increased timeout for larger batches
+      });
+
+      const data = response.data;
+
+      if (data) {
+        // 1. Capture Total Records (only on first page)
+        if (offset === 0 && data.total) {
+          totalRecords = parseInt(data.total, 10);
+          console.log(`--- Total records available on server: ${totalRecords} ---`);
+        }
+
+        // 2. Validate and Append Records
+        const currentBatch = data.records || [];
+        
+        if (currentBatch.length > 0) {
+          allRecords = allRecords.concat(currentBatch);
+          
+          // 3. Update Offset
+          offset += recordsPerPage;
+
+          console.log(`Progress: ${allRecords.length} / ${totalRecords} fetched.`);
+
+          // 4. Check Exit Conditions
+          // Stop if we have fetched equal to or more than the total reported by API
+          // OR if the current batch is smaller than the limit (indicates last page)
+          if (allRecords.length >= totalRecords || currentBatch.length < recordsPerPage) {
+            hasMoreData = false;
+          }
+        } else {
+          // Empty records array received
+          hasMoreData = false;
+        }
+      } else {
+        hasMoreData = false;
+      }
+
+      // Small delay to avoid 429 (Too Many Requests) errors
+      if (hasMoreData) {
+        await new Promise(resolve => setTimeout(resolve, 200)); 
+      }
+    }
+
+    if (pageCount >= MAX_PAGES) {
+      console.warn(`Warning: Reached maximum safety limit of ${MAX_PAGES} pages. Fetching stopped.`);
+    }
+
+    console.log(`Fetch Complete! Final count: ${allRecords.length}`);
+
+    return {
+      success: true,
+      data: {
+        total: totalRecords, // Total reported by API
+        records: allRecords, // Actual records fetched
+        count: allRecords.length
+      }
+    };
+
+  } catch (error) {
+    console.error('Error fetching Mandi prices:', error.message);
+    if (error.response) {
+      console.error('API Error Details:', error.response.status, error.response.data);
+    }
+    throw new Error('Failed to fetch all Mandi prices: ' + error.message);
+  }
+};
+
+/**
  * Get unique states from Mandi data
  * @returns {Promise<Array>} List of states
  */
@@ -202,6 +310,7 @@ const getCommodities = async (state, district) => {
 
 module.exports = {
   getMandiPrices,
+  getAllMandiPrices,
   getStates,
   getDistricts,
   getCommodities
