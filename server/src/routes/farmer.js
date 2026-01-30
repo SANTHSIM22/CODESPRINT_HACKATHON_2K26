@@ -92,6 +92,47 @@ router.post('/products', authMiddleware, async (req, res) => {
   }
 });
 
+// Update a product
+router.put('/products/:id', authMiddleware, async (req, res) => {
+  try {
+    console.log('PUT /products/:id - User:', req.user.id, 'Product ID:', req.params.id);
+    
+    if (req.user.userType !== 'farmer') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { name, category, quantity, unit, price, description, harvestDate, location, image } = req.body;
+
+    // Find the product and verify ownership
+    const product = await Product.findOne({ _id: req.params.id, farmerId: req.user.id });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found or you do not have permission to edit it' });
+    }
+
+    // Update the product
+    product.name = name || product.name;
+    product.category = category || product.category;
+    product.quantity = quantity || product.quantity;
+    product.unit = unit || product.unit;
+    product.price = price || product.price;
+    product.description = description || product.description;
+    product.harvestDate = harvestDate || product.harvestDate;
+    product.location = location || product.location;
+    if (image) {
+      product.image = image;
+    }
+
+    await product.save();
+    console.log('Product updated successfully:', product._id);
+
+    res.json({ message: 'Product updated successfully', product });
+  } catch (error) {
+    console.error('Error updating product:', error.message);
+    res.status(500).json({ error: 'Server error', details: error.message });
+  }
+});
+
 // Delete a product
 router.delete('/products/:id', authMiddleware, async (req, res) => {
   try {

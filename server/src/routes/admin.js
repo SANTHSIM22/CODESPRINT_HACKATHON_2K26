@@ -148,6 +148,42 @@ router.delete('/products/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Update Product (Admin)
+router.put('/products/:id', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { name, category, quantity, unit, price, description, harvestDate, location, image, status } = req.body;
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Update the product
+    if (name) product.name = name;
+    if (category) product.category = category;
+    if (quantity) product.quantity = quantity;
+    if (unit) product.unit = unit;
+    if (price) product.price = price;
+    if (description !== undefined) product.description = description;
+    if (harvestDate) product.harvestDate = harvestDate;
+    if (location) product.location = location;
+    if (image) product.image = image;
+    if (status) product.status = status;
+
+    await product.save();
+
+    res.json({ message: 'Product updated successfully', product });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get All Orders (Admin)
 router.get('/orders', authMiddleware, async (req, res) => {
   try {

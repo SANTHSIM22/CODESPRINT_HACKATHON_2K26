@@ -99,6 +99,22 @@ function AdminDashboard() {
     deliveredOrders: 0
   });
   
+  // Edit Product States
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    category: '',
+    quantity: '',
+    unit: 'kg',
+    price: '',
+    description: '',
+    harvestDate: '',
+    location: '',
+    image: '',
+    status: 'active'
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -217,6 +233,70 @@ function AdminDashboard() {
     } catch (error) {
       console.error('Error deleting product:', error);
     }
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setEditForm({
+      name: product.name || '',
+      category: product.category || '',
+      quantity: product.quantity?.toString() || '',
+      unit: product.unit || 'kg',
+      price: product.price?.toString() || '',
+      description: product.description || '',
+      harvestDate: product.harvestDate ? product.harvestDate.split('T')[0] : '',
+      location: product.location || '',
+      image: product.image || '',
+      status: product.status || 'active'
+    });
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({ ...editForm, [name]: value });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `http://localhost:5000/api/admin/products/${editingProduct._id}`,
+        {
+          ...editForm,
+          quantity: parseFloat(editForm.quantity),
+          price: parseFloat(editForm.price)
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      setEditingProduct(null);
+      fetchProducts();
+      fetchDashboardData(token);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert('Failed to update product');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProduct(null);
+    setEditForm({
+      name: '',
+      category: '',
+      quantity: '',
+      unit: 'kg',
+      price: '',
+      description: '',
+      harvestDate: '',
+      location: '',
+      image: '',
+      status: 'active'
+    });
   };
 
   const handleLogout = () => {
@@ -798,18 +878,198 @@ function AdminDashboard() {
                           </svg>
                           <span>By: {product.farmerName}</span>
                         </div>
-                        <button
-                          onClick={() => handleDeleteProduct(product._id)}
-                          className="w-full py-2.5 bg-red-50 text-red-600 rounded-lg font-semibold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Delete Product
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditProduct(product)}
+                            className="flex-1 py-2.5 bg-[#36656B]/10 text-[#36656B] rounded-lg font-semibold hover:bg-[#36656B]/20 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product._id)}
+                            className="flex-1 py-2.5 bg-red-50 text-red-600 rounded-lg font-semibold hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Edit Product Modal */}
+              {editingProduct && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="p-6 border-b border-[#DAD887]/30">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-bold text-[#36656B]">Edit Product</h2>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                          <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Product Name</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={editForm.name}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Category</label>
+                          <select
+                            name="category"
+                            value={editForm.category}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          >
+                            <option value="">Select Category</option>
+                            <option value="vegetables">Vegetables</option>
+                            <option value="fruits">Fruits</option>
+                            <option value="grains">Grains</option>
+                            <option value="dairy">Dairy</option>
+                            <option value="pulses">Pulses</option>
+                            <option value="spices">Spices</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Quantity</label>
+                          <input
+                            type="number"
+                            name="quantity"
+                            value={editForm.quantity}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Unit</label>
+                          <select
+                            name="unit"
+                            value={editForm.unit}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                          >
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="quintal">Quintal</option>
+                            <option value="ton">Ton</option>
+                            <option value="piece">Piece</option>
+                            <option value="dozen">Dozen</option>
+                            <option value="liter">Liter</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Price (₹)</label>
+                          <input
+                            type="number"
+                            name="price"
+                            value={editForm.price}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Location</label>
+                          <input
+                            type="text"
+                            name="location"
+                            value={editForm.location}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-[#36656B] mb-2">Harvest Date</label>
+                          <input
+                            type="date"
+                            name="harvestDate"
+                            value={editForm.harvestDate}
+                            onChange={handleEditFormChange}
+                            className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#36656B] mb-2">Status</label>
+                        <select
+                          name="status"
+                          value={editForm.status}
+                          onChange={handleEditFormChange}
+                          className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="sold">Sold</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#36656B] mb-2">Description</label>
+                        <textarea
+                          name="description"
+                          value={editForm.description}
+                          onChange={handleEditFormChange}
+                          rows={3}
+                          className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#36656B] mb-2">Image URL</label>
+                        <input
+                          type="text"
+                          name="image"
+                          value={editForm.image}
+                          onChange={handleEditFormChange}
+                          className="w-full px-4 py-3 border border-[#DAD887]/50 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
+                          placeholder="Enter image URL"
+                        />
+                      </div>
+                      <div className="flex gap-4 pt-4">
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="flex-1 py-3 border border-[#DAD887] text-[#36656B] rounded-xl font-semibold hover:bg-[#DAD887]/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={editLoading}
+                          className="flex-1 py-3 bg-gradient-to-r from-[#75B06F] to-[#36656B] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+                        >
+                          {editLoading ? 'Updating...' : 'Update Product'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               )}
             </div>
