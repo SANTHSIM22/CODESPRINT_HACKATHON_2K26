@@ -19,9 +19,10 @@ function Header() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled 
-            ? 'bg-white/90 backdrop-blur-xl shadow-lg shadow-gray-900/5 py-3' 
-            : 'bg-transparent py-5'
+            ? 'backdrop-blur-2xl shadow-lg shadow-gray-900/5 py-3' 
+            : 'backdrop-blur-md py-5'
         }`}
+        style={{ backgroundColor: scrolled ? 'rgba(218, 216, 135, 0.8)' : 'rgba(218, 216, 135, 0.6)' }}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group cursor-pointer">
@@ -39,7 +40,7 @@ function Header() {
               <li key={index}>
                 <a 
                   href={`#${item.toLowerCase().replace(/ /g, '-')}`} 
-                  className="relative text-gray-600 hover:text-green-600 font-medium transition-colors group py-2"
+                  className="relative text-black hover:text-[#36656B] font-medium transition-colors group py-2"
                   onClick={(e) => {
                     e.preventDefault();
                     const id = item.toLowerCase().replace(/ /g, '-');
@@ -47,19 +48,19 @@ function Header() {
                   }}
                 >
                   {item}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-300"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#36656B] group-hover:w-full transition-all duration-300"></span>
                 </a>
               </li>
             ))}
           </ul>
 
           <div className="hidden lg:flex items-center gap-4">
-            <Link to="/login" className="text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2">
+            <Link to="/login" className="text-black hover:text-[#36656B] font-semibold transition-colors px-4 py-2">
               Log In
             </Link>
-            <Link to="/signup" className="relative group bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5">
+            <Link to="/signup" className="relative group bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white px-6 py-3 rounded-xl font-semibold overflow-hidden transition-all hover:shadow-xl hover:shadow-[#36656B]/30 hover:-translate-y-0.5">
               <span className="relative z-10">Get Started Free</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#75B06F] to-[#36656B] opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </Link>
           </div>
 
@@ -86,7 +87,7 @@ function Header() {
                 <li key={index}>
                   <a 
                     href={`#${item.toLowerCase().replace(/ /g, '-')}`} 
-                    className="block px-6 py-3 text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                    className="block px-6 py-3 text-gray-600 hover:text-[#36656B] hover:bg-[#F0F8A4]/20 transition-colors"
                     onClick={(e) => {
                       e.preventDefault();
                       const id = item.toLowerCase().replace(/ /g, '-');
@@ -99,10 +100,10 @@ function Header() {
                 </li>
               ))}
               <li className="px-6 py-3 space-y-2">
-                <Link to="/login" className="block w-full text-center text-gray-700 hover:text-green-600 font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
+                <Link to="/login" className="block w-full text-center text-gray-700 hover:text-[#36656B] font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
                   Log In
                 </Link>
-                <Link to="/signup" className="block w-full text-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold">
+                <Link to="/signup" className="block w-full text-center bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white px-6 py-3 rounded-xl font-semibold">
                   Get Started Free
                 </Link>
               </li>
