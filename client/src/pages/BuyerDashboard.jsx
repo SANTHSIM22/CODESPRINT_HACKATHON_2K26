@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function BuyerDashboard() {
@@ -14,6 +14,8 @@ function BuyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [cart, setCart] = useState([]);
+  const [addedToCart, setAddedToCart] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +30,10 @@ function BuyerDashboard() {
     setUser(userData);
     fetchDashboardData(token);
     fetchProducts(token);
+    
+    // Load cart from localStorage
+    const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    setCart(savedCart);
   }, [navigate]);
 
   // Live search and filter effect
@@ -79,6 +85,34 @@ function BuyerDashboard() {
     setSelectedCategory('all');
   };
 
+  const addToCart = (product) => {
+    const existingItem = cart.find(item => item._id === product._id);
+    let updatedCart;
+    
+    if (existingItem) {
+      updatedCart = cart.map(item => 
+        item._id === product._id 
+          ? { ...item, cartQuantity: item.cartQuantity + 1 }
+          : item
+      );
+    } else {
+      updatedCart = [...cart, { ...product, cartQuantity: 1 }];
+    }
+    
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // Show feedback
+    setAddedToCart({ ...addedToCart, [product._id]: true });
+    setTimeout(() => {
+      setAddedToCart(prev => ({ ...prev, [product._id]: false }));
+    }, 2000);
+  };
+
+  const getCartCount = () => {
+    return cart.reduce((total, item) => total + item.cartQuantity, 0);
+  };
+
   if (!user) return <div>Loading...</div>;
 
   return (
@@ -97,6 +131,29 @@ function BuyerDashboard() {
           </div>
           
           <div className="flex items-center gap-4">
+            <Link 
+              to="/buyer/orders"
+              className="px-4 py-2 bg-[#F0F8A4] text-[#36656B] rounded-lg hover:bg-[#DAD887] transition-colors font-medium flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              My Orders
+            </Link>
+            <Link 
+              to="/buyer/cart"
+              className="relative px-4 py-2 bg-gradient-to-r from-[#75B06F] to-[#36656B] text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Cart
+              {getCartCount() > 0 && (
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {getCartCount()}
+                </span>
+              )}
+            </Link>
             <div className="text-right">
               <p className="text-sm text-gray-500">Welcome back,</p>
               <p className="font-bold text-[#36656B]">{user.name}</p>
@@ -331,11 +388,25 @@ function BuyerDashboard() {
                     </div>
                     
                     <div className="flex gap-3">
-                      <button className="flex-1 py-3 px-4 bg-gradient-to-r from-[#75B06F] to-[#36656B] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#75B06F]/40 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        Add to Cart
+                      <button 
+                        onClick={() => addToCart(product)}
+                        className={`flex-1 py-3 px-4 ${addedToCart[product._id] ? 'bg-green-500' : 'bg-gradient-to-r from-[#75B06F] to-[#36656B]'} text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#75B06F]/40 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2`}
+                      >
+                        {addedToCart[product._id] ? (
+                          <>
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Added!
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            Add to Cart
+                          </>
+                        )}
                       </button>
                       <button className="py-3 px-4 bg-[#F0F8A4] hover:bg-[#DAD887] text-[#36656B] rounded-xl font-bold transition-all hover:scale-105 active:scale-95 border border-[#DAD887]">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -89,6 +89,16 @@ function AdminDashboard() {
   const [analysisError, setAnalysisError] = useState('');
   const [activeAgents, setActiveAgents] = useState([]);
   
+  // Orders States
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [orderStats, setOrderStats] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    deliveredOrders: 0
+  });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -141,6 +151,41 @@ function AdminDashboard() {
       setProducts(response.data.products);
     } catch (error) {
       console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/admin/orders', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOrders(response.data.orders || []);
+      setOrderStats(response.data.stats || {
+        totalOrders: 0,
+        totalRevenue: 0,
+        pendingOrders: 0,
+        deliveredOrders: 0
+      });
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `http://localhost:5000/api/admin/orders/${orderId}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchOrders();
+    } catch (error) {
+      console.error('Error updating order status:', error);
     }
   };
 
@@ -298,6 +343,8 @@ function AdminDashboard() {
       fetchUsers();
     } else if (activeTab === 'products') {
       fetchProducts();
+    } else if (activeTab === 'orders') {
+      fetchOrders();
     } else if (activeTab === 'price-insights') {
       fetchStates();
     } else if (activeTab === 'cropnews') {
@@ -420,6 +467,7 @@ function AdminDashboard() {
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {[
               { id: 'overview', label: 'Dashboard Overview', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+              { id: 'orders', label: 'Order Management', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
               { id: 'users', label: 'User Management', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
               { id: 'products', label: 'Product Management', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
               { id: 'price-insights', label: 'Price Insights', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -480,6 +528,7 @@ function AdminDashboard() {
               <div>
                 <h1 className="text-2xl font-bold text-[#36656B]">
                   {activeTab === 'overview' && 'Dashboard Overview'}
+                  {activeTab === 'orders' && 'Order Management'}
                   {activeTab === 'users' && 'User Management'}
                   {activeTab === 'products' && 'Product Management'}
                   {activeTab === 'price-insights' && 'Price Insights'}
@@ -490,6 +539,7 @@ function AdminDashboard() {
                 </h1>
                 <p className="text-sm text-[#36656B]/70">
                   {activeTab === 'overview' && 'Monitor system performance and statistics'}
+                  {activeTab === 'orders' && 'Track and manage all orders'}
                   {activeTab === 'users' && 'Manage all registered users'}
                   {activeTab === 'products' && 'Oversee all product listings'}
                   {activeTab === 'price-insights' && 'Real-time mandi prices and market insights'}
@@ -757,6 +807,201 @@ function AdminDashboard() {
                           </svg>
                           Delete Product
                         </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Orders Tab */}
+          {activeTab === 'orders' && (
+            <div className="space-y-6">
+              {/* Order Stats */}
+              <div className="grid md:grid-cols-4 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 p-6 hover:shadow-lg transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-[#36656B] rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-3xl font-bold text-[#36656B] mb-1">{orderStats.totalOrders}</h3>
+                  <p className="text-[#36656B]/70 text-sm font-medium">Total Orders</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 p-6 hover:shadow-lg transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-[#75B06F] rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-3xl font-bold text-[#75B06F] mb-1">₹{orderStats.totalRevenue?.toLocaleString()}</h3>
+                  <p className="text-[#36656B]/70 text-sm font-medium">Total Revenue</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 p-6 hover:shadow-lg transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-3xl font-bold text-yellow-600 mb-1">{orderStats.pendingOrders}</h3>
+                  <p className="text-[#36656B]/70 text-sm font-medium">Pending Orders</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-[#DAD887]/30 p-6 hover:shadow-lg transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-3xl font-bold text-green-600 mb-1">{orderStats.deliveredOrders}</h3>
+                  <p className="text-[#36656B]/70 text-sm font-medium">Delivered Orders</p>
+                </div>
+              </div>
+
+              {/* Orders List */}
+              {ordersLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-300 border-t-[#36656B] mx-auto"></div>
+                  <p className="mt-4 text-sm text-gray-500">Loading orders...</p>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                  <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <p className="text-gray-500">No orders found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {orders.map((order) => (
+                    <div key={order._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:border-gray-300 transition-colors">
+                      {/* Order Header */}
+                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Order ID</p>
+                            <p className="font-mono font-semibold text-gray-800">{order._id.slice(-8).toUpperCase()}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Buyer</p>
+                            <p className="font-medium text-gray-800">{order.buyerName}</p>
+                            <p className="text-xs text-gray-500">{order.buyerEmail}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Total Amount</p>
+                            <p className="font-semibold text-gray-800">₹{order.totalAmount?.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Date</p>
+                            <p className="font-medium text-gray-700">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-3 py-1 rounded-md font-medium text-xs uppercase tracking-wide ${
+                            order.status === 'delivered' ? 'bg-green-50 text-green-700 border border-green-200' :
+                            order.status === 'shipped' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                            order.status === 'processing' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                            order.status === 'confirmed' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            order.status === 'cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
+                            'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}>
+                            {order.status}
+                          </span>
+                          <span className={`px-3 py-1 rounded-md font-medium text-xs uppercase tracking-wide ${
+                            order.paymentStatus === 'completed' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}>
+                            {order.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Order Items */}
+                      <div className="p-6">
+                        <div className="grid gap-3 mb-4">
+                          {order.items?.map((item, index) => (
+                            <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                                {item.image ? (
+                                  <img src={item.image} alt={item.productName} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-800">{item.productName}</h4>
+                                <p className="text-sm text-gray-500">Seller: {item.farmerName}</p>
+                                <p className="text-sm text-gray-500">{item.quantity} {item.unit} × ₹{item.price}</p>
+                              </div>
+                              <p className="font-semibold text-gray-800">₹{(item.quantity * item.price).toLocaleString()}</p>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Shipping Details */}
+                        <div className="pt-4 border-t border-gray-200 mb-4">
+                          <div className="flex items-start gap-2">
+                            <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-gray-700">Shipping Address</p>
+                              <p className="text-sm text-gray-500">{order.shippingAddress}</p>
+                              <p className="text-sm text-gray-500">Contact: {order.contactNumber}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Admin Action Buttons */}
+                        {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                          <div className="flex gap-2 flex-wrap">
+                            {order.status === 'confirmed' && (
+                              <button
+                                onClick={() => updateOrderStatus(order._id, 'processing')}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md font-medium text-sm hover:bg-gray-200 transition-colors border border-gray-200"
+                              >
+                                Start Processing
+                              </button>
+                            )}
+                            {order.status === 'processing' && (
+                              <button
+                                onClick={() => updateOrderStatus(order._id, 'shipped')}
+                                className="px-4 py-2 bg-gray-800 text-white rounded-md font-medium text-sm hover:bg-gray-900 transition-colors"
+                              >
+                                Mark as Shipped
+                              </button>
+                            )}
+                            {order.status === 'shipped' && (
+                              <button
+                                onClick={() => updateOrderStatus(order._id, 'delivered')}
+                                className="px-4 py-2 bg-[#36656B] text-white rounded-md font-medium text-sm hover:bg-[#2a5055] transition-colors"
+                              >
+                                Mark as Delivered
+                              </button>
+                            )}
+                            <button
+                              onClick={() => updateOrderStatus(order._id, 'cancelled')}
+                              className="px-4 py-2 bg-white text-red-600 rounded-md font-medium text-sm hover:bg-red-50 transition-colors border border-red-200"
+                            >
+                              Cancel Order
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

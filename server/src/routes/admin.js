@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middleware/auth');
 const User = require('../models/User');
 const Product = require('../models/Product');
+const Order = require('../models/Order');
 
 // Admin Login
 router.post('/login', async (req, res) => {
@@ -143,6 +144,78 @@ router.delete('/products/:id', authMiddleware, async (req, res) => {
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get All Orders (Admin)
+router.get('/orders', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const orders = await Order.find()
+      .sort({ createdAt: -1 });
+
+    // Calculate stats
+    const totalOrders = orders.length;
+    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const pendingOrders = orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length;
+    const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
+
+    res.json({ 
+      orders,
+      stats: {
+        totalOrders,
+        totalRevenue,
+        pendingOrders,
+        deliveredOrders
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Update Order Status (Admin)
+router.put('/orders/:id/status', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { status } = req.body;
+    const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    // If status is 'delivered', set delivered date (payment happens when buyer confirms)
+    const updateData = { status };
+    if (status === 'delivered') {
+      updateData.deliveredAt = new Date();
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const message = status === 'delivered' 
+      ? 'Order delivered - Awaiting buyer payment confirmation'
+      : 'Order status updated';
+
+    res.json({ message, order });
+  } catch (error) {
+    console.error('Error updating order status:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

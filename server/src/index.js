@@ -9,6 +9,7 @@ const buyerRoutes = require('./routes/buyer');
 const adminRoutes = require('./routes/admin');
 const analyticsRoutes = require('./routes/analytics');
 const agentsRoutes = require('./routes/agents');
+const ordersRoutes = require('./routes/orders');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/buyer', buyerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/agents', agentsRoutes);
+app.use('/api/orders', ordersRoutes);
 
 // Direct analyze route (matches your frontend)
 const { analyzeMarket } = require('./agents/masterOrchestrator');

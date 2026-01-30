@@ -31,10 +31,10 @@ async function runAllAgents(params) {
   const { cropType, location, quantity, quality, storageCapacity, financialUrgency } = params;
   
   console.log('\n' + '═'.repeat(60));
-  console.log('🚀 MASTER ORCHESTRATOR - Starting Analysis');
-  console.log(`📦 Crop: ${cropType} | 📍 Location: ${location}`);
-  console.log(`📊 Qty: ${quantity}qtl | ⭐ Quality: ${quality}`);
-  console.log(`🏠 Storage: ${storageCapacity}qtl | 💰 Urgency: ${financialUrgency}`);
+  console.log(' MASTER ORCHESTRATOR - Starting Analysis');
+  console.log(` Crop: ${cropType} |  Location: ${location}`);
+  console.log(` Qty: ${quantity}qtl |  Quality: ${quality}`);
+  console.log(` Storage: ${storageCapacity}qtl |  Urgency: ${financialUrgency}`);
   console.log('═'.repeat(60));
 
   const agentResults = {
@@ -50,12 +50,12 @@ async function runAllAgents(params) {
     // 1. Price Agent - Get mandi prices
     (async () => {
       try {
-        console.log('\n[📊 Price Agent] Fetching mandi prices...');
+        console.log('\n[ Price Agent] Fetching mandi prices...');
         const result = await priceInsightsAgent({ cropType, location });
         agentResults.priceData = formatPriceData(result.priceInsights);
-        console.log('[📊 Price Agent] ✅ Complete');
+        console.log('[Price Agent] Complete');
       } catch (error) {
-        console.error('[📊 Price Agent] ❌ Error:', error.message);
+        console.error('[Price Agent]  Error:', error.message);
         agentResults.errors.push({ agent: 'price', error: error.message });
       }
     })(),
@@ -76,12 +76,12 @@ async function runAllAgents(params) {
     // 3. Weather Agent - Get weather analysis
     (async () => {
       try {
-        console.log('\n[🌤️ Weather Agent] Analyzing weather conditions...');
+        console.log('\n[ Weather Agent] Analyzing weather conditions...');
         const weatherData = await getWeatherAnalysis(cropType, location);
         agentResults.weatherAnalysis = formatWeatherData(weatherData);
-        console.log('[🌤️ Weather Agent] ✅ Complete');
+        console.log('[ Weather Agent] Complete');
       } catch (error) {
-        console.error('[🌤️ Weather Agent] ❌ Error:', error.message);
+        console.error('[ Weather Agent] Error:', error.message);
         agentResults.errors.push({ agent: 'weather', error: error.message });
       }
     })(),
@@ -89,13 +89,13 @@ async function runAllAgents(params) {
     // 4. Search Agent - Get market intelligence
     (async () => {
       try {
-        console.log('\n[🔍 Search Agent] Gathering market intelligence...');
+        console.log('\n[ Search Agent] Gathering market intelligence...');
         const searchQuery = `${cropType} market trends price forecast ${location} India 2025`;
         const searchResult = await searchCropInfo(searchQuery);
         agentResults.searchInsights = formatSearchData(searchResult, cropType);
-        console.log('[🔍 Search Agent] ✅ Complete');
+        console.log('[ Search Agent] ✅ Complete');
       } catch (error) {
-        console.error('[🔍 Search Agent] ❌ Error:', error.message);
+        console.error('[ Search Agent] ❌ Error:', error.message);
         agentResults.errors.push({ agent: 'search', error: error.message });
       }
     })()
@@ -514,8 +514,8 @@ async function analyzeMarket(params) {
     const processingTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
     console.log('\n' + '═'.repeat(60));
-    console.log(`✅ ANALYSIS COMPLETE in ${processingTime}s`);
-    console.log(`📋 Recommendation: ${recommendation.recommendation?.action}`);
+    console.log(` ANALYSIS COMPLETE in ${processingTime}s`);
+    console.log(` Recommendation: ${recommendation.recommendation?.action}`);
     console.log('═'.repeat(60) + '\n');
 
     return {
