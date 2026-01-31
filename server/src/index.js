@@ -36,7 +36,7 @@ app.use('/api/', limiter);
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://codesprint-hackathon-2k26.onrender.com',
+  'https://codesprint-hackathon-2k26-4.onrender.com',
   process.env.CLIENT_URL,
   process.env.CORS_ORIGIN
 ].filter(Boolean);
