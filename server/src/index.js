@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -60,14 +59,6 @@ if (isProduction) {
     crossOriginResourcePolicy: { policy: "cross-origin" }
   }));
 }
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 100 : 1000, // limit each IP
-  message: { error: 'Too many requests, please try again later.' }
-});
-app.use('/api/', limiter);
 
 // Body parser middleware - Increase payload limit for base64 images
 app.use(express.json({ limit: '50mb' }));
