@@ -21,7 +21,12 @@ import {
   RefreshCw,
   ChevronRight,
   Leaf,
-  BarChart3
+  BarChart3,
+  Tag,
+  ShoppingCart,
+  ClipboardList,
+  Truck,
+  CheckCircle
 } from 'lucide-react';
 
 function StoreDashboard() {
@@ -31,6 +36,7 @@ function StoreDashboard() {
   const [store, setStore] = useState(null);
   const [inventory, setInventory] = useState([]);
   const [farmersProducts, setFarmersProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -45,6 +51,11 @@ function StoreDashboard() {
   const [purchaseModal, setPurchaseModal] = useState({ open: false, product: null });
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
   const [sellingPrice, setSellingPrice] = useState('');
+  
+  // Sale modal state
+  const [saleModal, setSaleModal] = useState({ open: false, item: null });
+  const [saleQuantity, setSaleQuantity] = useState(1);
+  const [salePrice, setSalePrice] = useState('');
 
   const token = localStorage.getItem('storeToken');
 
@@ -61,7 +72,7 @@ function StoreDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [inventoryRes, productsRes, statsRes] = await Promise.all([
+      const [inventoryRes, productsRes, statsRes, ordersRes] = await Promise.all([
         axios.get('http://localhost:5000/api/store/inventory', {
           headers: { Authorization: `Bearer ${token}` }
         }),
@@ -70,12 +81,16 @@ function StoreDashboard() {
         }),
         axios.get('http://localhost:5000/api/store/dashboard-stats', {
           headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get('http://localhost:5000/api/store/orders', {
+          headers: { Authorization: `Bearer ${token}` }
         })
       ]);
       
       setInventory(inventoryRes.data.inventory);
       setFarmersProducts(productsRes.data.products);
       setStats(statsRes.data);
+      setOrders(ordersRes.data.orders || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       if (error.response?.status === 401) {
@@ -142,6 +157,62 @@ function StoreDashboard() {
     }
   };
 
+  const handlePutForSale = async () => {
+    if (!saleModal.item || saleQuantity <= 0 || !salePrice) return;
+    
+    try {
+      await axios.put(`http://localhost:5000/api/store/inventory/${saleModal.item._id}/sale`, {
+        isForSale: true,
+        saleQuantity: parseInt(saleQuantity),
+        salePrice: parseFloat(salePrice)
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setSaleModal({ open: false, item: null });
+      setSaleQuantity(1);
+      setSalePrice('');
+      fetchData();
+      alert('Item put for sale successfully!');
+    } catch (error) {
+      console.error('Error putting item for sale:', error);
+      alert(error.response?.data?.error || 'Failed to put item for sale');
+    }
+  };
+
+  const handleRemoveFromSale = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this item from sale?')) return;
+    
+    try {
+      await axios.put(`http://localhost:5000/api/store/inventory/${id}/sale`, {
+        isForSale: false,
+        saleQuantity: 0
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+      alert('Item removed from sale');
+    } catch (error) {
+      console.error('Error removing from sale:', error);
+      alert(error.response?.data?.error || 'Failed to remove from sale');
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(`http://localhost:5000/api/store/orders/${orderId}/status`, {
+        status: newStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchData();
+      alert(`Order status updated to ${newStatus}`);
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert(error.response?.data?.error || 'Failed to update order status');
+    }
+  };
+
   const filteredInventory = inventory.filter(item =>
     item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -152,8 +223,17 @@ function StoreDashboard() {
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Items that are for sale
+  const itemsForSale = inventory.filter(item => 
+    item.isForSale && 
+    (item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const menuItems = [
     { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'my-sales', label: 'My Sales', icon: Tag },
+    { id: 'orders', label: 'Orders', icon: ClipboardList },
     { id: 'farmers-products', label: 'Farmers Products', icon: Leaf }
   ];
 
@@ -227,11 +307,17 @@ function StoreDashboard() {
           <div className="px-6 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-[#36656B]">
-                {activeTab === 'inventory' ? 'Inventory Management' : 'Farmers Products'}
+                {activeTab === 'inventory' ? 'Inventory Management' : 
+                 activeTab === 'my-sales' ? 'My Sales' : 
+                 activeTab === 'orders' ? 'Customer Orders' : 'Farmers Products'}
               </h1>
               <p className="text-[#36656B]/60 text-sm">
                 {activeTab === 'inventory' 
                   ? 'Manage your store inventory' 
+                  : activeTab === 'my-sales'
+                  ? 'Manage items you have put for sale'
+                  : activeTab === 'orders'
+                  ? 'Track and manage customer orders'
                   : 'Browse and purchase from farmers'}
               </p>
             </div>
@@ -335,63 +421,41 @@ function StoreDashboard() {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Ordered Qty</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Available Qty</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Purchase Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Selling Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Farmer</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Delivery</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Actions</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Product</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Category</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Ordered</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Available</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Price</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Delivery</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#36656B] uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {filteredInventory.map((item) => (
                         <tr key={item._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-4">
                             <p className="font-medium text-[#36656B]">{item.productName}</p>
+                            <p className="text-xs text-gray-400">From: {item.farmerName}</p>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-[#F0F8A4]/50 text-[#36656B] rounded-full text-sm">
+                          <td className="px-4 py-4">
+                            <span className="px-2 py-1 bg-[#F0F8A4]/50 text-[#36656B] rounded-full text-xs">
                               {item.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            {editingItem === item._id && item.deliveryStatus !== 'received' ? (
-                              <input
-                                type="number"
-                                defaultValue={item.purchasedQuantity}
-                                min="1"
-                                className="w-20 px-2 py-1 border rounded"
-                                id={`qty-${item._id}`}
-                              />
-                            ) : (
-                              <span className="text-[#36656B]">{item.purchasedQuantity} {item.unit}</span>
-                            )}
+                          <td className="px-4 py-4">
+                            <span className="text-[#36656B]">{item.purchasedQuantity} {item.unit}</span>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`${item.deliveryStatus === 'received' ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+                          <td className="px-4 py-4">
+                            <span className={`font-medium ${item.deliveryStatus === 'received' ? 'text-green-600' : 'text-gray-400'}`}>
                               {item.availableQuantity} {item.unit}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-[#36656B]">₹{item.purchasePrice}/{item.unit}</td>
-                          <td className="px-6 py-4">
-                            {editingItem === item._id && item.deliveryStatus !== 'received' ? (
-                              <input
-                                type="number"
-                                defaultValue={item.sellingPrice}
-                                min="1"
-                                className="w-24 px-2 py-1 border rounded"
-                                id={`price-${item._id}`}
-                              />
-                            ) : (
-                              <span className="text-[#75B06F] font-medium">₹{item.sellingPrice}/{item.unit}</span>
-                            )}
+                          <td className="px-4 py-4">
+                            <p className="text-xs text-gray-500">Buy: ₹{item.purchasePrice}/{item.unit}</p>
+                            <p className="text-sm font-medium text-[#75B06F]">Sell: ₹{item.sellingPrice}/{item.unit}</p>
                           </td>
-                          <td className="px-6 py-4 text-[#36656B]/70">{item.farmerName}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          <td className="px-4 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               item.deliveryStatus === 'received' 
                                 ? 'bg-green-100 text-green-700' 
                                 : 'bg-yellow-100 text-yellow-700'
@@ -399,11 +463,30 @@ function StoreDashboard() {
                               {item.deliveryStatus === 'received' ? '✓ Received' : '⏳ Pending'}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-4">
                             {item.deliveryStatus === 'received' ? (
-                              <span className="text-xs text-gray-400 italic">No actions (received)</span>
+                              <div className="flex items-center gap-1">
+                                {item.isForSale ? (
+                                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs">
+                                    ✓ Listed
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setSaleModal({ open: true, item });
+                                      setSaleQuantity(item.availableQuantity);
+                                      setSalePrice(item.sellingPrice);
+                                    }}
+                                    className="px-2 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1"
+                                    title="Put for sale"
+                                  >
+                                    <Tag className="w-3 h-3" />
+                                    Put for Sale
+                                  </button>
+                                )}
+                              </div>
                             ) : (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1">
                                 {editingItem === item._id ? (
                                   <button
                                     onClick={() => {
@@ -414,25 +497,25 @@ function StoreDashboard() {
                                         sellingPrice: parseFloat(price)
                                       });
                                     }}
-                                    className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
+                                    className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200"
                                   >
-                                    <Save className="w-4 h-4" />
+                                    <Save className="w-3 h-3" />
                                   </button>
                                 ) : (
                                   <button
                                     onClick={() => setEditingItem(item._id)}
-                                    className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
-                                    title="Edit quantity and price"
+                                    className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200"
+                                    title="Edit"
                                   >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-3 h-3" />
                                   </button>
                                 )}
                                 <button
                                   onClick={() => handleDeleteInventory(item._id)}
-                                  className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-                                  title="Cancel order"
+                                  className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                                  title="Cancel"
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className="w-3 h-3" />
                                 </button>
                               </div>
                             )}
@@ -444,7 +527,205 @@ function StoreDashboard() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : activeTab === 'my-sales' ? (
+            /* My Sales Tab */
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-semibold text-[#36656B]">Items for Sale ({itemsForSale.length} items)</h3>
+              </div>
+              {itemsForSale.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No items for sale yet</p>
+                  <p className="text-gray-400 text-sm mt-2">Go to Inventory and put received items for sale</p>
+                  <button
+                    onClick={() => setActiveTab('inventory')}
+                    className="mt-4 px-6 py-2 bg-[#75B06F] text-white rounded-xl hover:bg-[#5a9a55] transition-colors"
+                  >
+                    Go to Inventory
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                  {itemsForSale.map((item) => (
+                    <div key={item._id} className="bg-gradient-to-br from-[#F0F8A4]/20 to-white rounded-2xl shadow-sm border border-[#75B06F]/20 overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            For Sale
+                          </span>
+                          <span className="text-xl font-bold text-[#75B06F]">₹{item.salePrice}/{item.unit}</span>
+                        </div>
+                        
+                        <h3 className="font-semibold text-[#36656B] text-lg mb-2">{item.productName}</h3>
+                        <span className="px-2 py-1 bg-[#F0F8A4]/50 text-[#36656B] rounded-full text-xs">
+                          {item.category}
+                        </span>
+                        
+                        <div className="space-y-2 text-sm text-[#36656B]/70 mt-4 mb-4">
+                          <p>Quantity for Sale: <span className="font-medium text-[#36656B]">{item.saleQuantity} {item.unit}</span></p>
+                          <p>Available Stock: <span className="font-medium text-[#36656B]">{item.availableQuantity} {item.unit}</span></p>
+                          <p>Purchase Price: <span className="font-medium text-[#36656B]">₹{item.purchasePrice}/{item.unit}</span></p>
+                          <p>Profit/unit: <span className="font-medium text-green-600">₹{(item.salePrice - item.purchasePrice).toFixed(2)}</span></p>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSaleModal({ open: true, item });
+                              setSaleQuantity(item.saleQuantity);
+                              setSalePrice(item.salePrice);
+                            }}
+                            className="flex-1 py-2 bg-blue-100 text-blue-600 font-medium rounded-xl hover:bg-blue-200 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleRemoveFromSale(item._id)}
+                            className="flex-1 py-2 bg-red-100 text-red-600 font-medium rounded-xl hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <X className="w-4 h-4" />
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'orders' ? (
+            /* Orders Tab */
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              <div className="p-4 border-b border-gray-100">
+                <h3 className="font-semibold text-[#36656B]">Customer Orders ({orders.length} orders)</h3>
+              </div>
+              {orders.length === 0 ? (
+                <div className="p-12 text-center">
+                  <ClipboardList className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No orders yet</p>
+                  <p className="text-gray-400 text-sm mt-2">When customers buy your products, orders will appear here</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {orders.map((order) => (
+                    <div key={order._id} className="p-6 hover:bg-gray-50">
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                        {/* Order Info */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="text-sm font-mono text-[#36656B]/60">#{order._id.slice(-8).toUpperCase()}</span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              order.status === 'delivered' 
+                                ? 'bg-green-100 text-green-700' 
+                                : order.status === 'shipped' 
+                                  ? 'bg-blue-100 text-blue-700' 
+                                  : order.status === 'processing'
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                          </div>
+                          
+                          {/* Customer Info */}
+                          <div className="mb-4">
+                            <p className="text-sm text-[#36656B]/60">Customer</p>
+                            <p className="font-medium text-[#36656B]">{order.buyerName || 'N/A'}</p>
+                            <p className="text-sm text-[#36656B]/70">{order.buyerEmail}</p>
+                          </div>
+                          
+                          {/* Shipping Address */}
+                          {order.shippingAddress && (
+                            <div className="mb-4">
+                              <p className="text-sm text-[#36656B]/60">Shipping Address</p>
+                              <p className="text-sm text-[#36656B]">
+                                {order.shippingAddress.fullName}, {order.shippingAddress.address}, 
+                                {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                              </p>
+                              <p className="text-sm text-[#36656B]/70">Phone: {order.shippingAddress.phone}</p>
+                            </div>
+                          )}
+                          
+                          {/* Items */}
+                          <div>
+                            <p className="text-sm text-[#36656B]/60 mb-2">Items Ordered</p>
+                            <div className="space-y-2">
+                              {order.items.map((item, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-[#F0F8A4]/20 rounded-lg px-3 py-2">
+                                  <div>
+                                    <p className="font-medium text-[#36656B]">{item.productName}</p>
+                                    <p className="text-xs text-[#36656B]/60">{item.quantity} {item.unit}</p>
+                                  </div>
+                                  <p className="font-medium text-[#75B06F]">₹{item.price * item.quantity}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Right Side - Total & Actions */}
+                        <div className="lg:w-64 bg-gray-50 rounded-xl p-4">
+                          <div className="mb-4">
+                            <p className="text-sm text-[#36656B]/60">Order Total</p>
+                            <p className="text-2xl font-bold text-[#36656B]">₹{order.totalAmount}</p>
+                            <p className="text-xs text-[#36656B]/60 mt-1">
+                              {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          
+                          {/* Status Update Buttons */}
+                          <div className="space-y-2">
+                            {order.status === 'pending' && (
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, 'processing')}
+                                className="w-full py-2 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition-colors flex items-center justify-center gap-2"
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                                Start Processing
+                              </button>
+                            )}
+                            {order.status === 'processing' && (
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, 'shipped')}
+                                className="w-full py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Truck className="w-4 h-4" />
+                                Mark as Shipped
+                              </button>
+                            )}
+                            {order.status === 'shipped' && (
+                              <button
+                                onClick={() => handleUpdateOrderStatus(order._id, 'delivered')}
+                                className="w-full py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Mark as Delivered
+                              </button>
+                            )}
+                            {order.status === 'delivered' && (
+                              <div className="flex items-center justify-center gap-2 py-2 bg-green-100 text-green-700 rounded-lg">
+                                <CheckCircle className="w-4 h-4" />
+                                <span className="font-medium">Completed</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'farmers-products' ? (
             /* Farmers Products Tab */
             <div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -499,7 +780,7 @@ function StoreDashboard() {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -576,6 +857,99 @@ function StoreDashboard() {
                   className="flex-1 py-3 bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white rounded-xl hover:opacity-90"
                 >
                   Confirm Purchase
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sale Modal */}
+      {saleModal.open && saleModal.item && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-[#36656B] mb-4">Put Item for Sale</h3>
+            <div className="space-y-4">
+              <div className="p-4 bg-[#F0F8A4]/30 rounded-xl">
+                <p className="font-medium text-[#36656B]">{saleModal.item.productName}</p>
+                <p className="text-sm text-[#36656B]/70">Category: {saleModal.item.category}</p>
+                <p className="text-sm text-[#36656B]/70">Available: {saleModal.item.availableQuantity} {saleModal.item.unit}</p>
+                <p className="text-sm text-[#36656B]/70">Purchase Price: ₹{saleModal.item.purchasePrice}/{saleModal.item.unit}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#36656B] mb-2">Quantity to Sell</label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSaleQuantity(Math.max(1, saleQuantity - 1))}
+                    className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    <Minus className="w-5 h-5" />
+                  </button>
+                  <input
+                    type="number"
+                    value={saleQuantity}
+                    onChange={(e) => setSaleQuantity(Math.max(1, Math.min(saleModal.item.availableQuantity, parseInt(e.target.value) || 1)))}
+                    className="w-20 px-3 py-2 text-center border rounded-lg"
+                  />
+                  <button
+                    onClick={() => setSaleQuantity(Math.min(saleModal.item.availableQuantity, saleQuantity + 1))}
+                    className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                  <span className="text-[#36656B]">{saleModal.item.unit}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#36656B] mb-2">Sale Price (per {saleModal.item.unit})</label>
+                <input
+                  type="number"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  placeholder="Enter sale price"
+                />
+              </div>
+              
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#36656B]/70">Total Sale Value:</span>
+                  <span className="font-bold text-[#36656B]">₹{(parseFloat(salePrice || 0) * saleQuantity).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm mt-2">
+                  <span className="text-[#36656B]/70">Profit per {saleModal.item.unit}:</span>
+                  <span className={`font-bold ${(parseFloat(salePrice || 0) - saleModal.item.purchasePrice) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ₹{(parseFloat(salePrice || 0) - saleModal.item.purchasePrice).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm mt-2">
+                  <span className="text-[#36656B]/70">Total Profit:</span>
+                  <span className={`font-bold ${(parseFloat(salePrice || 0) - saleModal.item.purchasePrice) * saleQuantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ₹{((parseFloat(salePrice || 0) - saleModal.item.purchasePrice) * saleQuantity).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setSaleModal({ open: false, item: null });
+                    setSaleQuantity(1);
+                    setSalePrice('');
+                  }}
+                  className="flex-1 py-3 border border-gray-300 text-[#36656B] rounded-xl hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePutForSale}
+                  disabled={!salePrice || saleQuantity <= 0}
+                  className="flex-1 py-3 bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Tag className="w-5 h-5" />
+                  Put for Sale
                 </button>
               </div>
             </div>

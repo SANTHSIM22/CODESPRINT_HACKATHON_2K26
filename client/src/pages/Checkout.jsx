@@ -59,7 +59,8 @@ function Checkout() {
       
       const orderItems = cart.map(item => ({
         productId: item._id,
-        quantity: item.cartQuantity
+        quantity: item.cartQuantity,
+        isStoreProduct: item.isStoreProduct || false
       }));
 
       const response = await axios.post(

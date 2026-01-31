@@ -123,8 +123,32 @@ const COMMODITY_ALIASES = {
     'dry chillies': 'Dry Chillies'
 };
 
+// Language configuration for multilingual support
+const languageConfig = {
+    en: {
+        name: 'English',
+        instruction: ''
+    },
+    hi: {
+        name: 'Hindi',
+        instruction: 'कृपया सभी टेक्स्ट फ़ील्ड्स (rationale, best_time_to_sell, market_factors) को हिंदी में लिखें।'
+    },
+    ta: {
+        name: 'Tamil',
+        instruction: 'தயவுசெய்து அனைத்து உரை புலங்களையும் (rationale, best_time_to_sell, market_factors) தமிழில் எழுதவும்.'
+    },
+    pa: {
+        name: 'Punjabi',
+        instruction: 'ਕਿਰਪਾ ਕਰਕੇ ਸਾਰੇ ਟੈਕਸਟ ਫੀਲਡਾਂ ਨੂੰ ਪੰਜਾਬੀ ਵਿੱਚ ਲਿਖੋ।'
+    },
+    mr: {
+        name: 'Marathi',
+        instruction: 'कृपया सर्व मजकूर फील्ड मराठीत लिहा.'
+    }
+};
+
 async function priceInsightsAgent(state) {
-    const { cropType, location } = state;
+    const { cropType, location, language = 'en' } = state;
     
     try {
         // Fetch real mandi data
@@ -133,7 +157,7 @@ async function priceInsightsAgent(state) {
         // If no mandi data found, fallback to Mistral LLM estimation
         if (!mandiRecords || mandiRecords.length === 0) {
             console.log(`[Price Agent] No mandi data for ${cropType} in ${location}, using Mistral LLM fallback...`);
-            const llmPriceData = await getLLMPriceEstimate(cropType, location);
+            const llmPriceData = await getLLMPriceEstimate(cropType, location, language);
             return {
                 ...state,
                 priceInsights: llmPriceData
@@ -143,8 +167,8 @@ async function priceInsightsAgent(state) {
         // Validate and structure the data
         const validatedData = validatePriceData(mandiRecords, cropType, location);
         
-        // Enrich with analytics and insights
-        const priceInsights = enrichPriceData(validatedData);
+        // Enrich with analytics and insights (pass language for translations)
+        const priceInsights = enrichPriceData(validatedData, language);
 
         return {
             ...state,
@@ -174,8 +198,14 @@ async function priceInsightsAgent(state) {
 /**
  * Get price estimates from Mistral LLM when mandi data is unavailable
  */
-async function getLLMPriceEstimate(cropType, location) {
-    const prompt = `You are an expert agricultural price analyst for Indian markets.
+async function getLLMPriceEstimate(cropType, location, language = 'en') {
+    // Get language instruction
+    const langConfig = languageConfig[language] || languageConfig.en;
+    const langInstruction = language !== 'en' 
+        ? `\n\nIMPORTANT LANGUAGE REQUIREMENT: ${langConfig.instruction} All text fields (best_time_to_sell, market_factors array, price_rationale) must be written in ${langConfig.name}.`
+        : '';
+
+    const prompt = `You are an expert agricultural price analyst for Indian markets.${langInstruction}
 
 Provide realistic current market price estimates for ${cropType} in ${location}, India.
 
@@ -185,8 +215,8 @@ Based on your knowledge of Indian agricultural markets, MSP (Minimum Support Pri
 2. Estimated minimum price in ₹/quintal  
 3. Estimated maximum price in ₹/quintal
 4. Price trend (rising/stable/falling)
-5. Best time to sell
-6. Key market factors affecting price
+5. Best time to sell${language !== 'en' ? ` (in ${langConfig.name})` : ''}
+6. Key market factors affecting price${language !== 'en' ? ` (in ${langConfig.name})` : ''}
 
 IMPORTANT: Return ONLY a valid JSON object in this exact format:
 {
@@ -195,10 +225,10 @@ IMPORTANT: Return ONLY a valid JSON object in this exact format:
   "estimated_max_price": <number>,
   "price_trend": "<rising|stable|falling>",
   "confidence": "<high|medium|low>",
-  "best_time_to_sell": "<string>",
-  "market_factors": ["<factor1>", "<factor2>", "<factor3>"],
+  "best_time_to_sell": "<string${language !== 'en' ? ` in ${langConfig.name}` : ''}>",
+  "market_factors": ["<factor1${language !== 'en' ? ` in ${langConfig.name}` : ''}>", "<factor2>", "<factor3>"],
   "msp_reference": <number or null>,
-  "price_rationale": "<brief explanation>"
+  "price_rationale": "<brief explanation${language !== 'en' ? ` in ${langConfig.name}` : ''}>"
 }
 
 Provide realistic prices based on actual Indian market conditions for ${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}.`;

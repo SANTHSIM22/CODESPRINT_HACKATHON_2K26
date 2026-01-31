@@ -77,6 +77,21 @@ const storeInventorySchema = new mongoose.Schema({
   },
   receivedAt: {
     type: Date
+  },
+  // For sale to buyers
+  isForSale: {
+    type: Boolean,
+    default: false
+  },
+  saleQuantity: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  salePrice: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: true

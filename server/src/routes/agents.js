@@ -25,13 +25,13 @@ router.get('/crop-news', authMiddleware, async (req, res) => {
 // Search crop info - for farmers to ask questions
 router.post('/search', authMiddleware, async (req, res) => {
   try {
-    const { query } = req.body;
+    const { query, language = 'en' } = req.body;
     
     if (!query || query.trim().length < 3) {
       return res.status(400).json({ success: false, error: 'Please enter a valid question' });
     }
 
-    const result = await searchCropInfo(query);
+    const result = await searchCropInfo(query, language);
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Search agent error:', error);
@@ -73,7 +73,7 @@ router.get('/commodities', authMiddleware, async (req, res) => {
 // Weather analysis for crop and location
 router.post('/weather', authMiddleware, async (req, res) => {
   try {
-    const { cropType, location } = req.body;
+    const { cropType, location, language = 'en' } = req.body;
     
     if (!cropType || !location) {
       return res.status(400).json({ 
@@ -82,7 +82,7 @@ router.post('/weather', authMiddleware, async (req, res) => {
       });
     }
 
-    const weatherData = await getWeatherAnalysis(cropType, location);
+    const weatherData = await getWeatherAnalysis(cropType, location, language);
     res.json({ success: true, data: weatherData });
   } catch (error) {
     console.error('Weather agent error:', error);
@@ -93,7 +93,7 @@ router.post('/weather', authMiddleware, async (req, res) => {
 // Price Insights - Get comprehensive market price analysis
 router.post('/price-insights', authMiddleware, async (req, res) => {
   try {
-    const { cropType, location } = req.body;
+    const { cropType, location, language = 'en' } = req.body;
     
     if (!cropType || !location) {
       return res.status(400).json({ 
@@ -106,6 +106,7 @@ router.post('/price-insights', authMiddleware, async (req, res) => {
     const state = {
       cropType,
       location,
+      language,
       errors: []
     };
 

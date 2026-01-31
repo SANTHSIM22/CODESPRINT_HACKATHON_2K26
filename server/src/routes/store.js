@@ -409,4 +409,225 @@ router.put('/profile', verifyStoreToken, async (req, res) => {
   }
 });
 
+// Put inventory item for sale
+router.put('/inventory/:id/sale', verifyStoreToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isForSale, saleQuantity, salePrice } = req.body;
+    const storeId = req.store.storeId;
+
+    const inventoryItem = await StoreInventory.findOne({ _id: id, storeId });
+    if (!inventoryItem) {
+      return res.status(404).json({ error: 'Inventory item not found' });
+    }
+
+    // Only received items can be put for sale
+    if (inventoryItem.deliveryStatus !== 'received') {
+      return res.status(400).json({ error: 'Only received items can be put for sale' });
+    }
+
+    // Validate sale quantity
+    if (saleQuantity > inventoryItem.availableQuantity) {
+      return res.status(400).json({ error: 'Sale quantity cannot exceed available quantity' });
+    }
+
+    inventoryItem.isForSale = isForSale;
+    inventoryItem.saleQuantity = saleQuantity || 0;
+    inventoryItem.salePrice = salePrice || inventoryItem.sellingPrice;
+
+    await inventoryItem.save();
+
+    res.json({
+      message: isForSale ? 'Item put for sale successfully' : 'Item removed from sale',
+      inventoryItem
+    });
+  } catch (error) {
+    console.error('Error updating sale status:', error);
+    res.status(500).json({ error: 'Failed to update sale status' });
+  }
+});
+
+// Get all products for sale from all stores (PUBLIC - for buyers)
+router.get('/products-for-sale', async (req, res) => {
+  try {
+    const products = await StoreInventory.find({ 
+      isForSale: true, 
+      saleQuantity: { $gt: 0 },
+      deliveryStatus: 'received'
+    })
+    .populate('storeId', 'storeName city state address')
+    .sort({ createdAt: -1 });
+
+    // Format response
+    const formattedProducts = products.map(item => ({
+      _id: item._id,
+      productName: item.productName,
+      category: item.category,
+      quantity: item.saleQuantity,
+      unit: item.unit,
+      price: item.salePrice,
+      originalPrice: item.purchasePrice,
+      store: {
+        id: item.storeId._id,
+        name: item.storeId.storeName,
+        city: item.storeId.city,
+        state: item.storeId.state,
+        address: item.storeId.address
+      },
+      farmerName: item.farmerName
+    }));
+
+    res.json({ products: formattedProducts });
+  } catch (error) {
+    console.error('Error fetching products for sale:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
+// Purchase from store (for buyers)
+router.post('/purchase-from-store', async (req, res) => {
+  try {
+    const { inventoryId, quantity, buyerId, buyerName, buyerEmail, shippingAddress, contactNumber } = req.body;
+
+    const inventoryItem = await StoreInventory.findById(inventoryId).populate('storeId');
+    if (!inventoryItem) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    if (!inventoryItem.isForSale) {
+      return res.status(400).json({ error: 'This product is not for sale' });
+    }
+
+    if (quantity > inventoryItem.saleQuantity) {
+      return res.status(400).json({ error: 'Requested quantity not available' });
+    }
+
+    // Update inventory
+    inventoryItem.saleQuantity -= quantity;
+    inventoryItem.availableQuantity -= quantity;
+    
+    if (inventoryItem.saleQuantity === 0) {
+      inventoryItem.isForSale = false;
+    }
+
+    await inventoryItem.save();
+
+    // Create order
+    const order = new Order({
+      buyerId,
+      buyerName,
+      buyerEmail,
+      items: [{
+        productId: inventoryItem.productId,
+        productName: inventoryItem.productName,
+        quantity,
+        unit: inventoryItem.unit,
+        price: inventoryItem.salePrice,
+        farmerId: inventoryItem.farmerId,
+        farmerName: inventoryItem.farmerName
+      }],
+      totalAmount: inventoryItem.salePrice * quantity,
+      status: 'confirmed',
+      paymentStatus: 'pending',
+      paymentMethod: 'Store Purchase',
+      shippingAddress,
+      contactNumber,
+      notes: `Purchased from ${inventoryItem.storeId.storeName}`
+    });
+
+    await order.save();
+
+    res.status(201).json({
+      message: 'Purchase successful',
+      order
+    });
+  } catch (error) {
+    console.error('Error purchasing from store:', error);
+    res.status(500).json({ error: 'Failed to complete purchase' });
+  }
+});
+
+// Get orders for store (buyer orders from store's inventory)
+router.get('/orders', verifyStoreToken, async (req, res) => {
+  try {
+    const storeId = req.store.storeId;
+
+    // Find orders where the farmerId (seller) matches the store ID
+    // This includes orders where items were bought from this store
+    const orders = await Order.find({
+      'items.farmerId': storeId
+    }).sort({ createdAt: -1 });
+
+    // Filter items to only show this store's items
+    const storeOrders = orders.map(order => {
+      const storeItems = order.items.filter(
+        item => item.farmerId.toString() === storeId
+      );
+      const storeTotal = storeItems.reduce(
+        (sum, item) => sum + (item.price * item.quantity), 0
+      );
+      
+      return {
+        _id: order._id,
+        buyerName: order.buyerName,
+        buyerEmail: order.buyerEmail,
+        items: storeItems,
+        totalAmount: storeTotal,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        shippingAddress: order.shippingAddress,
+        contactNumber: order.contactNumber,
+        createdAt: order.createdAt,
+        deliveredAt: order.deliveredAt
+      };
+    });
+
+    res.json({ orders: storeOrders });
+  } catch (error) {
+    console.error('Error fetching store orders:', error);
+    res.status(500).json({ error: 'Failed to fetch orders' });
+  }
+});
+
+// Update order status (for store)
+router.put('/orders/:orderId/status', verifyStoreToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const storeId = req.store.storeId;
+
+    const validStatuses = ['processing', 'shipped', 'delivered'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Check if this store has items in this order
+    const hasStoreItems = order.items.some(
+      item => item.farmerId.toString() === storeId
+    );
+    if (!hasStoreItems) {
+      return res.status(403).json({ error: 'You do not have items in this order' });
+    }
+
+    order.status = status;
+    if (status === 'delivered') {
+      order.deliveredAt = new Date();
+    }
+    await order.save();
+
+    res.json({
+      message: 'Order status updated successfully',
+      order
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
 module.exports = router;

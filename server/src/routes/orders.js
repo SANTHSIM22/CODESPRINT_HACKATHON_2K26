@@ -3,6 +3,8 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const StoreInventory = require('../models/StoreInventory');
+const Store = require('../models/Store');
 
 // Create a new order
 router.post('/create', authMiddleware, async (req, res) => {
@@ -26,24 +28,73 @@ router.post('/create', authMiddleware, async (req, res) => {
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) {
-        return res.status(400).json({ error: `Product not found: ${item.productId}` });
+      // Check if it's a store product
+      if (item.isStoreProduct) {
+        const inventoryItem = await StoreInventory.findById(item.productId);
+        if (!inventoryItem) {
+          return res.status(400).json({ error: `Store product not found: ${item.productId}` });
+        }
+
+        if (inventoryItem.saleQuantity < item.quantity) {
+          return res.status(400).json({ error: `Insufficient quantity for ${inventoryItem.productName}` });
+        }
+
+        const store = await Store.findById(inventoryItem.storeId);
+        const itemTotal = inventoryItem.salePrice * item.quantity;
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          productId: inventoryItem._id,
+          productName: inventoryItem.productName,
+          quantity: item.quantity,
+          unit: inventoryItem.unit,
+          price: inventoryItem.salePrice,
+          farmerId: inventoryItem.storeId, // Store as the seller
+          farmerName: store ? store.storeName : 'Store',
+          image: inventoryItem.image,
+          isStoreProduct: true
+        });
+
+        // Update store inventory
+        inventoryItem.saleQuantity -= item.quantity;
+        inventoryItem.availableQuantity -= item.quantity;
+        if (inventoryItem.saleQuantity <= 0) {
+          inventoryItem.isForSale = false;
+          inventoryItem.saleQuantity = 0;
+        }
+        await inventoryItem.save();
+      } else {
+        // Regular farmer product
+        const product = await Product.findById(item.productId);
+        if (!product) {
+          return res.status(400).json({ error: `Product not found: ${item.productId}` });
+        }
+
+        if (product.quantity < item.quantity) {
+          return res.status(400).json({ error: `Insufficient quantity for ${product.name}` });
+        }
+
+        const itemTotal = product.price * item.quantity;
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          productId: product._id,
+          productName: product.name,
+          quantity: item.quantity,
+          unit: product.unit,
+          price: product.price,
+          farmerId: product.farmerId,
+          farmerName: product.farmerName,
+          image: product.image
+        });
+
+        // Update product quantity
+        product.quantity -= item.quantity;
+        if (product.quantity <= 0) {
+          product.status = 'sold';
+        }
+        await product.save();
       }
-
-      const itemTotal = product.price * item.quantity;
-      totalAmount += itemTotal;
-
-      orderItems.push({
-        productId: product._id,
-        productName: product.name,
-        quantity: item.quantity,
-        unit: product.unit,
-        price: product.price,
-        farmerId: product.farmerId,
-        farmerName: product.farmerName,
-        image: product.image
-      });
     }
 
     const order = new Order({
@@ -56,7 +107,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       contactNumber,
       notes,
       status: 'confirmed',
-      paymentStatus: 'pending'
+      paymentStatus: 'completed'
     });
 
     await order.save();

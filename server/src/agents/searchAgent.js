@@ -11,6 +11,30 @@ const mistral = new ChatMistralAI({
   temperature: 0.3,
 });
 
+// Language configuration for multilingual support
+const languageConfig = {
+  en: {
+    name: 'English',
+    instruction: ''
+  },
+  hi: {
+    name: 'Hindi',
+    instruction: 'कृपया अपना जवाब हिंदी में दें। सभी जानकारी और सलाह हिंदी में लिखें।'
+  },
+  ta: {
+    name: 'Tamil',
+    instruction: 'தயவுசெய்து உங்கள் பதிலை தமிழில் தரவும். அனைத்து தகவல்களும் ஆலோசனைகளும் தமிழில் இருக்க வேண்டும்।'
+  },
+  pa: {
+    name: 'Punjabi',
+    instruction: 'ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਜਵਾਬ ਪੰਜਾਬੀ ਵਿੱਚ ਦਿਓ।'
+  },
+  mr: {
+    name: 'Marathi',
+    instruction: 'कृपया तुमचे उत्तर मराठीत द्या।'
+  }
+};
+
 /**
  * Format the AI response for proper display
  */
@@ -31,12 +55,18 @@ function formatResponse(content) {
 /**
  * Main function - Ask Mistral about crop prices
  */
-async function searchCropInfo(query) {
-  console.log(`\n🤖 AI Assistant: "${query}"`);
+async function searchCropInfo(query, language = 'en') {
+  console.log(`\n🤖 AI Assistant: "${query}" (Language: ${language})`);
+  
+  // Get language instruction
+  const langConfig = languageConfig[language] || languageConfig.en;
+  const langInstruction = language !== 'en' 
+    ? `\n\nIMPORTANT: ${langConfig.instruction} Respond entirely in ${langConfig.name}.` 
+    : '';
   
   try {
     const response = await mistral.invoke(`
-You are an expert agricultural advisor for Indian farmers.
+You are an expert agricultural advisor for Indian farmers.${langInstruction}
 
 Question: "${query}"
 
@@ -61,6 +91,7 @@ IMPORTANT FORMATTING RULES:
 - Use numbers (1. 2. 3. 4.) for advice
 - Keep it clean and readable
 - Use realistic Indian market prices
+${language !== 'en' ? `- Write ALL content in ${langConfig.name}` : ''}
 `);
 
     // Format the response for proper display
@@ -77,7 +108,11 @@ IMPORTANT FORMATTING RULES:
   } catch (error) {
     console.error("Error:", error.message);
     return {
-      answer: "Sorry, I couldn't process your question. Please try again.",
+      answer: language === 'hi' 
+        ? "क्षमा करें, आपके प्रश्न को संसाधित नहीं कर सका। कृपया पुनः प्रयास करें।"
+        : language === 'ta'
+        ? "மன்னிக்கவும், உங்கள் கேள்வியை செயல்படுத்த முடியவில்லை. மீண்டும் முயற்சிக்கவும்."
+        : "Sorry, I couldn't process your question. Please try again.",
       searchResults: [],
       news: []
     };
