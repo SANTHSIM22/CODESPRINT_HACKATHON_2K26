@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -96,9 +96,7 @@ function FarmerDashboard() {
     // First fetch orders to calculate revenue
     setOrdersLoading(true);
     try {
-      const ordersResponse = await axios.get('http://localhost:5000/api/orders/farmer', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const ordersResponse = await api.get(API_ENDPOINTS.ORDERS.FARMER);
       const fetchedOrders = ordersResponse.data.orders || [];
       setOrders(fetchedOrders);
       
@@ -108,9 +106,7 @@ function FarmerDashboard() {
         .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
       
       // Then fetch dashboard stats and merge with revenue
-      const dashboardResponse = await axios.get('http://localhost:5000/api/farmer/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const dashboardResponse = await api.get(API_ENDPOINTS.FARMER.DASHBOARD);
       
       setStats({
         ...dashboardResponse.data.stats,
@@ -125,9 +121,7 @@ function FarmerDashboard() {
 
   const fetchDashboardData = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/farmer/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.FARMER.DASHBOARD);
       // Preserve revenue when updating stats
       setStats(prevStats => ({
         ...response.data.stats,
@@ -141,9 +135,7 @@ function FarmerDashboard() {
   const fetchProducts = async (token) => {
     setProductsLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/farmer/products', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.FARMER.PRODUCTS);
       setProducts(response.data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -155,9 +147,7 @@ function FarmerDashboard() {
   const fetchOrders = async (token) => {
     setOrdersLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/orders/farmer', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ORDERS.FARMER);
       const fetchedOrders = response.data.orders || [];
       setOrders(fetchedOrders);
       
@@ -183,20 +173,18 @@ function FarmerDashboard() {
       
       // Use the special farmer deliver endpoint for delivery status
       if (newStatus === 'delivered') {
-        const response = await axios.put(
-          `http://localhost:5000/api/farmer/orders/${orderId}/deliver`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
+        const response = await api.put(
+          API_ENDPOINTS.FARMER.DELIVER_ORDER(orderId),
+          {}
         );
         
         // Show success message
         alert(response.data.message || 'Order marked as delivered. Store inventory has been updated.');
       } else {
         // Regular status update for other statuses
-        const response = await axios.put(
-          `http://localhost:5000/api/orders/${orderId}/status`,
-          { status: newStatus },
-          { headers: { Authorization: `Bearer ${token}` } }
+        const response = await api.put(
+          API_ENDPOINTS.ORDERS.STATUS(orderId),
+          { status: newStatus }
         );
         
         if (response.data.message) {
@@ -277,18 +265,16 @@ function FarmerDashboard() {
       };
 
       if (editingProductId) {
-        await axios.put(
-          `http://localhost:5000/api/farmer/products/${editingProductId}`,
-          productData,
-          { headers: { Authorization: `Bearer ${token}` } }
+        await api.put(
+          API_ENDPOINTS.FARMER.PRODUCT(editingProductId),
+          productData
         );
         setMessage({ type: 'success', text: 'Product updated successfully!' });
         setEditingProductId(null);
       } else {
-        await axios.post(
-          'http://localhost:5000/api/farmer/products',
-          productData,
-          { headers: { Authorization: `Bearer ${token}` } }
+        await api.post(
+          API_ENDPOINTS.FARMER.PRODUCTS,
+          productData
         );
         setMessage({ type: 'success', text: 'Product added successfully!' });
       }
@@ -324,9 +310,7 @@ function FarmerDashboard() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/farmer/products/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(API_ENDPOINTS.FARMER.PRODUCT(productId));
       
       fetchProducts(token);
       fetchDashboardData(token);
@@ -1165,10 +1149,8 @@ function FarmerDashboard() {
                   setPriceInsightsData(null);
                   
                   try {
-                    const token = localStorage.getItem('token');
-                    const response = await axios.post('http://localhost:5000/api/agents/price-insights', 
-                      { cropType: priceInsightsCrop, location: priceInsightsLocation, language },
-                      { headers: { Authorization: `Bearer ${token}` } }
+                    const response = await api.post(API_ENDPOINTS.AGENTS.PRICE_INSIGHTS, 
+                      { cropType: priceInsightsCrop, location: priceInsightsLocation, language }
                     );
                     
                     if (response.data.success) {
@@ -1504,10 +1486,8 @@ function FarmerDashboard() {
                   setSearchResult(null);
                   
                   try {
-                    const token = localStorage.getItem('token');
-                    const response = await axios.post('http://localhost:5000/api/agents/search', 
-                      { query: searchQuery, language },
-                      { headers: { Authorization: `Bearer ${token}` } }
+                    const response = await api.post(API_ENDPOINTS.AGENTS.SEARCH, 
+                      { query: searchQuery, language }
                     );
                     if (response.data.success) {
                       setSearchResult(response.data.data);
@@ -1724,10 +1704,8 @@ function FarmerDashboard() {
                   setWeatherData(null);
                   
                   try {
-                    const token = localStorage.getItem('token');
-                    const response = await axios.post('http://localhost:5000/api/agents/weather', 
-                      { cropType: weatherCrop, location: weatherLocation, language },
-                      { headers: { Authorization: `Bearer ${token}` } }
+                    const response = await api.post(API_ENDPOINTS.AGENTS.WEATHER, 
+                      { cropType: weatherCrop, location: weatherLocation, language }
                     );
                     if (response.data.success) {
                       setWeatherData(response.data.data);
@@ -2006,7 +1984,7 @@ function FarmerDashboard() {
                   });
                   
                   try {
-                    const response = await axios.post('http://localhost:5000/api/analyze', analysisForm);
+                    const response = await api.post(API_ENDPOINTS.ANALYZE, analysisForm);
                     if (response.data.success) {
                       setAnalysisData(response.data);
                       setActiveAgents([]);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import { User, Lock, LogIn, ArrowLeft, ShieldCheck } from 'lucide-react';
 
 function AdminLogin() {
@@ -18,7 +18,7 @@ function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/login', credentials);
+      const response = await api.post(API_ENDPOINTS.ADMIN.LOGIN, credentials);
       
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('admin', JSON.stringify(response.data.admin));

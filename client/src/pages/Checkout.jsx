@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function Checkout() {
   const [cart, setCart] = useState([]);
@@ -55,23 +55,20 @@ function Checkout() {
   const handlePaymentDone = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      
       const orderItems = cart.map(item => ({
         productId: item._id,
         quantity: item.cartQuantity,
         isStoreProduct: item.isStoreProduct || false
       }));
 
-      const response = await axios.post(
-        'http://localhost:5000/api/orders/create',
+      const response = await api.post(
+        API_ENDPOINTS.ORDERS.CREATE,
         {
           items: orderItems,
           shippingAddress: formData.shippingAddress,
           contactNumber: formData.contactNumber,
           notes: formData.notes
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        }
       );
 
       // Clear cart

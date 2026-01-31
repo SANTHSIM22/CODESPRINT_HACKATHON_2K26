@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import { Store, Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 
 function StoreLogin() {
@@ -18,7 +18,7 @@ function StoreLogin() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/store/login', credentials);
+      const response = await api.post(API_ENDPOINTS.STORE.LOGIN, credentials);
       
       localStorage.setItem('storeToken', response.data.token);
       localStorage.setItem('store', JSON.stringify(response.data.store));

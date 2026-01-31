@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function Login() {
   const [userType, setUserType] = useState('farmer'); // farmer or buyer
@@ -25,7 +25,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, {
         ...formData,
         userType
       });

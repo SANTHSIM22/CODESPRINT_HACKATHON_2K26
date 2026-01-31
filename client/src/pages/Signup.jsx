@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function Signup() {
   const [userType, setUserType] = useState('farmer');
@@ -36,7 +36,7 @@ function Signup() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/signup', {
+      const response = await api.post(API_ENDPOINTS.AUTH.SIGNUP, {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,

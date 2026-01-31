@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import {
   Store,
   Package,
@@ -73,18 +73,10 @@ function StoreDashboard() {
     setLoading(true);
     try {
       const [inventoryRes, productsRes, statsRes, ordersRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/store/inventory', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/store/farmers-products', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/store/dashboard-stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/store/orders', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get(API_ENDPOINTS.STORE.INVENTORY),
+        api.get(API_ENDPOINTS.STORE.FARMERS_PRODUCTS),
+        api.get(API_ENDPOINTS.STORE.DASHBOARD_STATS),
+        api.get(API_ENDPOINTS.STORE.ORDERS)
       ]);
       
       setInventory(inventoryRes.data.inventory);
@@ -111,12 +103,10 @@ function StoreDashboard() {
     if (!purchaseModal.product || purchaseQuantity <= 0) return;
     
     try {
-      await axios.post('http://localhost:5000/api/store/purchase', {
+      await api.post(API_ENDPOINTS.STORE.PURCHASE, {
         productId: purchaseModal.product._id,
         quantity: purchaseQuantity,
         sellingPrice: sellingPrice || purchaseModal.product.price * 1.2
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       setPurchaseModal({ open: false, product: null });
@@ -131,9 +121,7 @@ function StoreDashboard() {
 
   const handleUpdateInventory = async (id, data) => {
     try {
-      await axios.put(`http://localhost:5000/api/store/inventory/${id}`, data, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(API_ENDPOINTS.STORE.INVENTORY_ITEM(id), data);
       setEditingItem(null);
       fetchData();
     } catch (error) {
@@ -146,9 +134,7 @@ function StoreDashboard() {
     if (!window.confirm('Are you sure you want to cancel this order? This will restore the product quantity back to the farmer.')) return;
     
     try {
-      await axios.delete(`http://localhost:5000/api/store/inventory/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(API_ENDPOINTS.STORE.INVENTORY_ITEM(id));
       alert('Order cancelled successfully');
       fetchData();
     } catch (error) {
@@ -161,12 +147,10 @@ function StoreDashboard() {
     if (!saleModal.item || saleQuantity <= 0 || !salePrice) return;
     
     try {
-      await axios.put(`http://localhost:5000/api/store/inventory/${saleModal.item._id}/sale`, {
+      await api.put(API_ENDPOINTS.STORE.INVENTORY_SALE(saleModal.item._id), {
         isForSale: true,
         saleQuantity: parseInt(saleQuantity),
         salePrice: parseFloat(salePrice)
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       setSaleModal({ open: false, item: null });
@@ -184,11 +168,9 @@ function StoreDashboard() {
     if (!window.confirm('Are you sure you want to remove this item from sale?')) return;
     
     try {
-      await axios.put(`http://localhost:5000/api/store/inventory/${id}/sale`, {
+      await api.put(API_ENDPOINTS.STORE.INVENTORY_SALE(id), {
         isForSale: false,
         saleQuantity: 0
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
       alert('Item removed from sale');
@@ -200,10 +182,8 @@ function StoreDashboard() {
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/store/orders/${orderId}/status`, {
+      await api.put(API_ENDPOINTS.STORE.ORDER_STATUS(orderId), {
         status: newStatus
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       fetchData();
       alert(`Order status updated to ${newStatus}`);

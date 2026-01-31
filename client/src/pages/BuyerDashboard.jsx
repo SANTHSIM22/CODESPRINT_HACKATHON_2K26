@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import { useLanguage } from '../context/LanguageContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -40,9 +40,9 @@ function BuyerDashboard() {
     }
     
     setUser(userData);
-    fetchDashboardData(token);
-    fetchProducts(token);
-    fetchNearbyStores(token);
+    fetchDashboardData();
+    fetchProducts();
+    fetchNearbyStores();
     
     // Load cart from localStorage
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -54,19 +54,17 @@ function BuyerDashboard() {
     const token = localStorage.getItem('token');
     if (token && user) {
       if (activeView === 'farmers') {
-        fetchProducts(token);
+        fetchProducts();
       } else if (selectedStore) {
-        fetchStoreProducts(token, selectedStore._id);
+        fetchStoreProducts(selectedStore._id);
       }
     }
   }, [searchTerm, selectedCategory, activeView]);
 
-  const fetchNearbyStores = async (token) => {
+  const fetchNearbyStores = async () => {
     setStoresLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/buyer/nearby-stores', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.BUYER.NEARBY_STORES);
       setNearbyStores(response.data.stores || []);
       setUserCity(response.data.userCity || '');
     } catch (error) {
@@ -76,16 +74,14 @@ function BuyerDashboard() {
     }
   };
 
-  const fetchStoreProducts = async (token, storeId) => {
+  const fetchStoreProducts = async (storeId) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
       
-      const response = await axios.get(`http://localhost:5000/api/buyer/store/${storeId}/products?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`${API_ENDPOINTS.BUYER.STORE_PRODUCTS(storeId)}?${params}`);
       setStoreProducts(response.data.products || []);
     } catch (error) {
       console.error('Error fetching store products:', error);
@@ -98,8 +94,7 @@ function BuyerDashboard() {
   const handleStoreClick = (store) => {
     setSelectedStore(store);
     setActiveView('stores');
-    const token = localStorage.getItem('token');
-    fetchStoreProducts(token, store._id);
+    fetchStoreProducts(store._id);
   };
 
   const handleBackToStores = () => {
@@ -107,27 +102,23 @@ function BuyerDashboard() {
     setStoreProducts([]);
   };
 
-  const fetchDashboardData = async (token) => {
+  const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/buyer/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.BUYER.DASHBOARD);
       setStats(response.data.stats);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
   };
 
-  const fetchProducts = async (token) => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
       
-      const response = await axios.get(`http://localhost:5000/api/buyer/products?${params}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`${API_ENDPOINTS.BUYER.PRODUCTS}?${params}`);
       
       setProducts(response.data.products || []);
     } catch (error) {

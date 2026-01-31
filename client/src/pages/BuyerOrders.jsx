@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 
 function BuyerOrders() {
   const [orders, setOrders] = useState([]);
@@ -19,14 +19,12 @@ function BuyerOrders() {
     }
     
     setUser(userData);
-    fetchOrders(token);
+    fetchOrders();
   }, [navigate]);
 
-  const fetchOrders = async (token) => {
+  const fetchOrders = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/orders/buyer', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ORDERS.BUYER);
       setOrders(response.data.orders || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -38,12 +36,7 @@ function BuyerOrders() {
   const handlePayment = async (orderId) => {
     try {
       setPayingOrderId(orderId);
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `http://localhost:5000/api/orders/${orderId}/pay`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(API_ENDPOINTS.ORDERS.PAY(orderId), {});
       
       // Update the order in state
       setOrders(orders.map(order => 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS } from '../config/api';
 import { Store, User, Mail, Lock, Phone, MapPin, Building, FileText, ArrowLeft, CheckCircle } from 'lucide-react';
 
 function StoreSignup() {
@@ -43,7 +43,7 @@ function StoreSignup() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/store/signup', {
+      const response = await api.post(API_ENDPOINTS.STORE.SIGNUP, {
         storeName: formData.storeName,
         ownerName: formData.ownerName,
         email: formData.email,

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_ENDPOINTS, API_BASE_URL } from '../config/api';
 import { 
   Search, 
   BarChart3, 
@@ -132,9 +132,7 @@ function AdminDashboard() {
 
   const fetchDashboardData = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/admin/dashboard', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ADMIN.DASHBOARD);
       setStats(response.data.stats);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -148,10 +146,7 @@ function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ADMIN.USERS);
       setUsers(response.data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -160,10 +155,7 @@ function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/admin/products', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ADMIN.PRODUCTS);
       setProducts(response.data.products);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -173,10 +165,7 @@ function AdminDashboard() {
   const fetchOrders = async () => {
     setOrdersLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ADMIN.ORDERS);
       setOrders(response.data.orders || []);
       setOrderStats(response.data.stats || {
         totalOrders: 0,
@@ -193,11 +182,9 @@ function AdminDashboard() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:5000/api/admin/orders/${orderId}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.put(
+        API_ENDPOINTS.ADMIN.ORDER_STATUS(orderId),
+        { status: newStatus }
       );
       fetchOrders();
     } catch (error) {
@@ -210,9 +197,7 @@ function AdminDashboard() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(API_ENDPOINTS.ADMIN.DELETE_USER(userId));
       fetchUsers();
       fetchDashboardData(token);
     } catch (error) {
@@ -225,9 +210,7 @@ function AdminDashboard() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/products/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(API_ENDPOINTS.ADMIN.DELETE_PRODUCT(productId));
       fetchProducts();
       fetchDashboardData(token);
     } catch (error) {
@@ -262,14 +245,13 @@ function AdminDashboard() {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:5000/api/admin/products/${editingProduct._id}`,
+      await api.put(
+        API_ENDPOINTS.ADMIN.UPDATE_PRODUCT(editingProduct._id),
         {
           ...editForm,
           quantity: parseFloat(editForm.quantity),
           price: parseFloat(editForm.price)
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        }
       );
       
       setEditingProduct(null);
@@ -308,10 +290,7 @@ function AdminDashboard() {
   // Fetch states for Mandi
   const fetchStates = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/analytics/mandi/states', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.ANALYTICS.MANDI_STATES);
       if (response.data.success) {
         setStates(response.data.states);
       }
@@ -324,10 +303,7 @@ function AdminDashboard() {
   const fetchDistricts = async (state) => {
     if (!state) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/analytics/mandi/districts?state=${state}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`${API_ENDPOINTS.ANALYTICS.MANDI_DISTRICTS}?state=${state}`);
       if (response.data.success) {
         setDistricts(response.data.districts);
       }
@@ -339,14 +315,11 @@ function AdminDashboard() {
   // Fetch commodities based on state and district
   const fetchCommodities = async (state, district) => {
     try {
-      const token = localStorage.getItem('token');
-      let url = 'http://localhost:5000/api/analytics/mandi/commodities?';
+      let url = `${API_ENDPOINTS.ANALYTICS.MANDI_COMMODITIES}?`;
       if (state) url += `state=${state}`;
       if (district) url += `&district=${district}`;
       
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(url);
       if (response.data.success) {
         setCommodities(response.data.commodities);
       }
@@ -365,14 +338,11 @@ function AdminDashboard() {
     setLoadingMandi(true);
     setMandiError('');
     try {
-      const token = localStorage.getItem('token');
-      let url = `http://localhost:5000/api/analytics/mandi/prices?state=${selectedState}`;
+      let url = `${API_ENDPOINTS.ANALYTICS.MANDI_PRICES}?state=${selectedState}`;
       if (selectedDistrict) url += `&district=${selectedDistrict}`;
       if (selectedCommodity) url += `&commodity=${selectedCommodity}`;
       
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(url);
       console.log(response.data.records.length);
       if (response.data.success) {
         setMandiPrices(response.data.records || []);
@@ -437,10 +407,7 @@ function AdminDashboard() {
     setLoadingNews(true);
     setNewsError('');
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/agents/crop-news', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(API_ENDPOINTS.AGENTS.CROP_NEWS);
       if (response.data.success) {
         setCropNews(response.data.data);
       }
@@ -464,11 +431,9 @@ function AdminDashboard() {
     setWeatherData(null);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/agents/weather',
-        { cropType: weatherCrop.trim(), location: weatherLocation.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const response = await api.post(
+        API_ENDPOINTS.AGENTS.WEATHER,
+        { cropType: weatherCrop.trim(), location: weatherLocation.trim() }
       );
       
       if (response.data.success) {
@@ -1288,10 +1253,8 @@ function AdminDashboard() {
                   setPriceInsightsData(null);
                   
                   try {
-                    const token = localStorage.getItem('token');
-                    const response = await axios.post('http://localhost:5000/api/agents/price-insights', 
-                      { cropType: priceInsightsCrop, location: priceInsightsLocation },
-                      { headers: { Authorization: `Bearer ${token}` } }
+                    const response = await api.post(API_ENDPOINTS.AGENTS.PRICE_INSIGHTS, 
+                      { cropType: priceInsightsCrop, location: priceInsightsLocation }
                     );
                     
                     if (response.data.success) {
@@ -2035,16 +1998,11 @@ function AdminDashboard() {
                     }
                     
                     try {
-                      const response = await fetch('http://localhost:5000/api/analyze', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(analysisForm)
-                      });
-                      const data = await response.json();
-                      if (data.success) {
-                        setAnalysisData(data.data);
+                      const response = await api.post(API_ENDPOINTS.ANALYZE, analysisForm);
+                      if (response.data.success) {
+                        setAnalysisData(response.data.data);
                       } else {
-                        setAnalysisError(data.message || 'Analysis failed');
+                        setAnalysisError(response.data.message || 'Analysis failed');
                       }
                     } catch (err) {
                       setAnalysisError('Failed to run analysis: ' + err.message);
