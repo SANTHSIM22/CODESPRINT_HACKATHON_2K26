@@ -589,6 +589,142 @@ router.get('/orders', verifyStoreToken, async (req, res) => {
   }
 });
 
+// Get customer delivery orders (orders that should be delivered through this store)
+router.get('/customer-deliveries', verifyStoreToken, async (req, res) => {
+  try {
+    const storeId = req.store.storeId;
+
+    // Find orders where this store is selected as the pickup/delivery point
+    // Exclude pickupCode from response - store should not see it, only verify it
+    const orders = await Order.find({
+      selectedStoreId: storeId,
+      orderType: 'store_pickup'
+    }).select('-pickupCode').sort({ createdAt: -1 });
+
+    res.json({ orders });
+  } catch (error) {
+    console.error('Error fetching customer deliveries:', error);
+    res.status(500).json({ error: 'Failed to fetch customer deliveries' });
+  }
+});
+
+// Mark order as arrived at store (farmer delivered to store)
+router.put('/customer-deliveries/:orderId/arrived', verifyStoreToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const storeId = req.store.storeId;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      selectedStoreId: storeId
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order.status = 'ready_for_pickup';
+    order.arrivedAtStoreAt = new Date();
+    await order.save();
+
+    res.json({
+      message: 'Order marked as arrived at store',
+      order
+    });
+  } catch (error) {
+    console.error('Error marking order as arrived:', error);
+    res.status(500).json({ error: 'Failed to update order' });
+  }
+});
+
+// Perform quality check on order
+router.put('/customer-deliveries/:orderId/quality-check', verifyStoreToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status, notes } = req.body;
+    const storeId = req.store.storeId;
+
+    if (!['passed', 'failed'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid quality check status' });
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      selectedStoreId: storeId
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order.qualityCheckStatus = status;
+    order.qualityCheckNotes = notes || '';
+    order.qualityCheckedBy = storeId;
+    order.qualityCheckedAt = new Date();
+
+    if (status === 'failed') {
+      order.status = 'cancelled';
+      order.paymentStatus = 'failed';
+      // TODO: Handle refund/return to farmer logic
+    }
+
+    await order.save();
+
+    res.json({
+      message: `Quality check ${status}`,
+      order
+    });
+  } catch (error) {
+    console.error('Error performing quality check:', error);
+    res.status(500).json({ error: 'Failed to update quality check' });
+  }
+});
+
+// Mark order as delivered to customer (with pickup code verification)
+router.put('/customer-deliveries/:orderId/deliver', verifyStoreToken, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { pickupCode } = req.body;
+    const storeId = req.store.storeId;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      selectedStoreId: storeId
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Verify pickup code
+    if (order.pickupCode && pickupCode !== order.pickupCode) {
+      return res.status(400).json({ error: 'Invalid pickup code' });
+    }
+
+    // Check quality status
+    if (order.qualityCheckStatus !== 'passed') {
+      return res.status(400).json({ error: 'Quality check must pass before delivery' });
+    }
+
+    order.status = 'delivered';
+    order.deliveredAt = new Date();
+    order.pickedUpAt = new Date();
+    // Release payment to farmer
+    order.paymentStatus = 'released';
+    order.paidAt = new Date();
+
+    await order.save();
+
+    res.json({
+      message: 'Order delivered successfully. Payment released to farmer.',
+      order
+    });
+  } catch (error) {
+    console.error('Error delivering order:', error);
+    res.status(500).json({ error: 'Failed to deliver order' });
+  }
+});
+
 // Update order status (for store)
 router.put('/orders/:orderId/status', verifyStoreToken, async (req, res) => {
   try {

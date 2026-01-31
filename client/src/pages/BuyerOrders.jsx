@@ -60,6 +60,7 @@ function BuyerOrders() {
       confirmed: 'bg-blue-50 text-blue-700 border border-blue-200',
       processing: 'bg-purple-50 text-purple-700 border border-purple-200',
       shipped: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+      ready_for_pickup: 'bg-green-50 text-green-700 border border-green-200',
       delivered: 'bg-green-50 text-green-700 border border-green-200',
       cancelled: 'bg-red-50 text-red-700 border border-red-200'
     };
@@ -205,6 +206,40 @@ function BuyerOrders() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Pickup Code for Store Pickup Orders */}
+                  {order.orderType === 'store_pickup' && order.pickupCode && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="bg-[#F0F8A4]/30 border border-[#75B06F]/30 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-[#36656B]">🏪 Store Pickup Order</p>
+                            <p className="text-sm text-[#36656B]/70">
+                              Pickup from: <span className="font-medium">{order.selectedStoreName || 'Selected Store'}</span>
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">Show this code to the storekeeper when collecting your order</p>
+                          </div>
+                          <div className="text-center bg-white px-4 py-3 rounded-lg border-2 border-[#75B06F]">
+                            <p className="text-xs text-[#36656B]/60 uppercase tracking-wide">Pickup Code</p>
+                            <p className="text-2xl font-mono font-bold text-[#75B06F] tracking-wider">{order.pickupCode}</p>
+                          </div>
+                        </div>
+                        {order.qualityCheckStatus && (
+                          <div className="mt-3 pt-3 border-t border-[#75B06F]/20">
+                            <span className={`text-sm px-2 py-1 rounded ${
+                              order.qualityCheckStatus === 'passed' 
+                                ? 'bg-green-100 text-green-700' 
+                                : order.qualityCheckStatus === 'failed'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              Quality Check: {order.qualityCheckStatus === 'passed' ? '✓ Passed' : order.qualityCheckStatus === 'failed' ? '✗ Failed' : 'Pending'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Pay Now Button - Only shows for delivered orders with pending payment */}
                   {order.status === 'delivered' && order.paymentStatus !== 'completed' && (

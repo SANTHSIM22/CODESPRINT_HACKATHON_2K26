@@ -17,7 +17,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     const stats = {
       totalPurchases: 8,
       activeBids: 3,
-      totalSpent: 85000,
+      totalSpent: 8500,
       savedListings: 15
     };
 
@@ -107,6 +107,48 @@ router.get('/nearby-stores', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching nearby stores:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get stores for order delivery (by city or all verified stores)
+router.get('/delivery-stores', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'buyer') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { city } = req.query;
+    
+    // Get buyer's location
+    const buyer = await User.findById(req.user.id);
+    if (!buyer) {
+      return res.status(400).json({ error: 'Buyer not found' });
+    }
+
+    let storeFilter = {};
+    
+    if (city) {
+      // Search by specific city (case-insensitive)
+      storeFilter.city = { $regex: new RegExp(`^${city}$`, 'i') };
+    } else if (buyer.location) {
+      // Default to buyer's city
+      storeFilter.city = { $regex: new RegExp(`^${buyer.location}$`, 'i') };
+    }
+
+    // Find stores
+    const stores = await Store.find(storeFilter).select('-password').sort({ storeName: 1 });
+
+    // Get all unique cities for dropdown
+    const allCities = await Store.distinct('city');
+
+    res.json({ 
+      stores,
+      userCity: buyer.location,
+      availableCities: allCities.sort()
+    });
+  } catch (error) {
+    console.error('Error fetching delivery stores:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

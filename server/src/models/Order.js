@@ -58,12 +58,12 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'confirmed', 'processing', 'shipped', 'ready_for_pickup', 'delivered', 'cancelled'],
     default: 'confirmed'
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'completed', 'failed'],
+    enum: ['pending', 'held', 'completed', 'released', 'failed'],
     default: 'pending'
   },
   paymentMethod: {
@@ -81,6 +81,47 @@ const orderSchema = new mongoose.Schema({
   notes: {
     type: String
   },
+  // New fields for store-based delivery system
+  orderType: {
+    type: String,
+    enum: ['direct', 'store_pickup', 'store_delivery'],
+    default: 'store_pickup'
+  },
+  selectedStoreId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Store'
+  },
+  selectedStoreName: {
+    type: String
+  },
+  // Quality check fields
+  qualityCheckStatus: {
+    type: String,
+    enum: ['pending', 'passed', 'failed', 'not_required'],
+    default: 'pending'
+  },
+  qualityCheckNotes: {
+    type: String
+  },
+  qualityCheckedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Store'
+  },
+  qualityCheckedAt: {
+    type: Date
+  },
+  // Pickup code for buyer to collect from store
+  pickupCode: {
+    type: String
+  },
+  // Track when order arrived at store
+  arrivedAtStoreAt: {
+    type: Date
+  },
+  // Track when buyer picked up
+  pickedUpAt: {
+    type: Date
+  },
   deliveredAt: {
     type: Date
   },
@@ -89,6 +130,14 @@ const orderSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Generate pickup code before saving
+orderSchema.pre('save', function(next) {
+  if (this.isNew && this.orderType === 'store_pickup' && !this.pickupCode) {
+    this.pickupCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+  next();
 });
 
 module.exports = mongoose.model('Order', orderSchema);

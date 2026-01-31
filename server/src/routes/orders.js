@@ -13,7 +13,7 @@ router.post('/create', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const { items, shippingAddress, contactNumber, notes } = req.body;
+    const { items, shippingAddress, contactNumber, notes, selectedStoreId, orderType } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'No items in order' });
@@ -21,6 +21,15 @@ router.post('/create', authMiddleware, async (req, res) => {
 
     if (!shippingAddress || !contactNumber) {
       return res.status(400).json({ error: 'Shipping address and contact number are required' });
+    }
+
+    // Validate store selection for store_pickup orders
+    let selectedStore = null;
+    if (orderType === 'store_pickup' && selectedStoreId) {
+      selectedStore = await Store.findById(selectedStoreId);
+      if (!selectedStore) {
+        return res.status(400).json({ error: 'Selected store not found' });
+      }
     }
 
     // Calculate total amount
@@ -107,7 +116,12 @@ router.post('/create', authMiddleware, async (req, res) => {
       contactNumber,
       notes,
       status: 'confirmed',
-      paymentStatus: 'completed'
+      // For store_pickup, payment is held until quality check and delivery
+      paymentStatus: orderType === 'store_pickup' ? 'held' : 'completed',
+      orderType: orderType || 'store_pickup',
+      selectedStoreId: selectedStoreId || null,
+      selectedStoreName: selectedStore ? selectedStore.storeName : null,
+      qualityCheckStatus: orderType === 'store_pickup' ? 'pending' : 'not_required'
     });
 
     await order.save();
@@ -115,7 +129,14 @@ router.post('/create', authMiddleware, async (req, res) => {
     res.status(201).json({ 
       message: 'Order placed successfully', 
       order,
-      orderId: order._id
+      orderId: order._id,
+      pickupCode: order.pickupCode,
+      selectedStore: selectedStore ? {
+        name: selectedStore.storeName,
+        address: selectedStore.address,
+        city: selectedStore.city,
+        phone: selectedStore.phone
+      } : null
     });
   } catch (error) {
     console.error('Error creating order:', error);
