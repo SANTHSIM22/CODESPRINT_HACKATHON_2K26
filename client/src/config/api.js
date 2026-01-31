@@ -25,6 +25,11 @@ api.interceptors.request.use(
     } else if (userToken) {
       config.headers.Authorization = `Bearer ${userToken}`;
     }
+
+    // Increase timeout for AI agent endpoints (they involve LLM processing)
+    if (config.url?.includes('/agents') || config.url?.includes('/analyze')) {
+      config.timeout = 60000; // 60 seconds for AI endpoints
+    }
     
     return config;
   },

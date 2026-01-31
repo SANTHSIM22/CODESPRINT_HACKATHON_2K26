@@ -7,6 +7,7 @@ const llm = new ChatMistralAI({
   model: "mistral-small-latest",
   apiKey: process.env.MISTRAL_API_KEY,
   temperature: 0.3,
+  timeout: 15000, // 15 second timeout for LLM
 });
 
 // State definition using Annotation (new LangGraph API)
@@ -32,6 +33,12 @@ const GraphState = Annotation.Root({
 // Node: Fetch crop economy news from NewsAPI
 async function fetchNews(state) {
   try {
+    // Check if NEWS_API_KEY is configured
+    if (!process.env.NEWS_API_KEY) {
+      console.log("NEWS_API_KEY not configured, using mock data");
+      return { ...state, newsData: getMockNews() };
+    }
+
     const keywords = "crop prices OR agriculture economy OR farming market OR commodity prices India";
     const response = await axios.get("https://newsapi.org/v2/everything", {
       params: {
@@ -41,13 +48,14 @@ async function fetchNews(state) {
         pageSize: 10,
         apiKey: process.env.NEWS_API_KEY,
       },
+      timeout: 10000, // 10 second timeout for news API
     });
     
     const articles = response.data.articles?.slice(0, 8) || [];
     return { ...state, newsData: articles };
   } catch (error) {
     console.error("News fetch error:", error.message);
-    // Return mock data if API fails
+    // Return mock data if API fails or times out
     return { 
       ...state, 
       newsData: getMockNews() 
