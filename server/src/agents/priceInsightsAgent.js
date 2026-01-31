@@ -232,10 +232,6 @@ IMPORTANT: Return ONLY a valid JSON object in this exact format:
 }
 
 Provide realistic prices based on actual Indian market conditions for ${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}.`;
-  "price_rationale": "<brief explanation>"
-}
-
-Provide realistic prices based on actual Indian market conditions for ${new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}.`;
 
     try {
         const response = await mistral.invoke(prompt);
