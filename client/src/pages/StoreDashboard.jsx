@@ -26,7 +26,12 @@ import {
   ShoppingCart,
   ClipboardList,
   Truck,
-  CheckCircle
+  CheckCircle,
+  XCircle,
+  PackageCheck,
+  Shield,
+  Clock,
+  MapPin
 } from 'lucide-react';
 
 function StoreDashboard() {
@@ -37,6 +42,7 @@ function StoreDashboard() {
   const [inventory, setInventory] = useState([]);
   const [farmersProducts, setFarmersProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [customerDeliveries, setCustomerDeliveries] = useState([]);
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -57,6 +63,13 @@ function StoreDashboard() {
   const [saleQuantity, setSaleQuantity] = useState(1);
   const [salePrice, setSalePrice] = useState('');
 
+  // Quality check modal state
+  const [qualityModal, setQualityModal] = useState({ open: false, order: null });
+  const [qualityNotes, setQualityNotes] = useState('');
+
+  // Delivery modal state
+  const [deliveryModal, setDeliveryModal] = useState({ open: false, order: null, pickupCode: '' });
+
   const token = localStorage.getItem('storeToken');
 
   useEffect(() => {
@@ -72,17 +85,19 @@ function StoreDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [inventoryRes, productsRes, statsRes, ordersRes] = await Promise.all([
+      const [inventoryRes, productsRes, statsRes, ordersRes, deliveriesRes] = await Promise.all([
         api.get(API_ENDPOINTS.STORE.INVENTORY),
         api.get(API_ENDPOINTS.STORE.FARMERS_PRODUCTS),
         api.get(API_ENDPOINTS.STORE.DASHBOARD_STATS),
-        api.get(API_ENDPOINTS.STORE.ORDERS)
+        api.get(API_ENDPOINTS.STORE.ORDERS),
+        api.get(API_ENDPOINTS.STORE.CUSTOMER_DELIVERIES)
       ]);
       
       setInventory(inventoryRes.data.inventory);
       setFarmersProducts(productsRes.data.products);
       setStats(statsRes.data);
       setOrders(ordersRes.data.orders || []);
+      setCustomerDeliveries(deliveriesRes.data.orders || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       if (error.response?.status === 401) {
@@ -213,9 +228,63 @@ function StoreDashboard() {
   const menuItems = [
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'my-sales', label: 'My Sales', icon: Tag },
+    { id: 'customer-deliveries', label: 'Customer Deliveries', icon: PackageCheck },
     { id: 'orders', label: 'Orders', icon: ClipboardList },
     { id: 'farmers-products', label: 'Farmers Products', icon: Leaf }
   ];
+
+  // Customer delivery handlers
+  const handleMarkArrived = async (orderId) => {
+    try {
+      await api.put(API_ENDPOINTS.STORE.CUSTOMER_DELIVERY_ARRIVED(orderId));
+      fetchData();
+      alert('Order marked as arrived at store');
+    } catch (error) {
+      console.error('Error marking order as arrived:', error);
+      alert(error.response?.data?.error || 'Failed to update order');
+    }
+  };
+
+  const handleQualityCheck = async (orderId, status, notes) => {
+    if (!orderId) return;
+    
+    // Convert 'pass'/'fail' to 'passed'/'failed' for backend
+    const backendStatus = status === 'pass' ? 'passed' : 'failed';
+    
+    try {
+      await api.put(API_ENDPOINTS.STORE.CUSTOMER_DELIVERY_QUALITY_CHECK(orderId), {
+        status: backendStatus,
+        notes: notes || ''
+      });
+      setQualityModal({ open: false, order: null, status: '', notes: '' });
+      fetchData();
+      alert(`Quality check ${status === 'pass' ? 'passed' : 'failed'}`);
+    } catch (error) {
+      console.error('Error performing quality check:', error);
+      alert(error.response?.data?.error || 'Failed to update quality check');
+    }
+  };
+
+  const handleDeliverOrder = async (orderId, pickupCode) => {
+    if (!orderId) return;
+    
+    try {
+      await api.put(API_ENDPOINTS.STORE.CUSTOMER_DELIVERY_DELIVER(orderId), {
+        pickupCode: pickupCode
+      });
+      setDeliveryModal({ open: false, order: null, pickupCode: '' });
+      fetchData();
+      alert('Order delivered successfully! Payment has been released to the farmer.');
+    } catch (error) {
+      console.error('Error delivering order:', error);
+      alert(error.response?.data?.error || 'Failed to deliver order');
+    }
+  };
+
+  // Filter customer deliveries
+  const pendingDeliveries = customerDeliveries.filter(o => o.status === 'confirmed' || o.status === 'processing' || o.status === 'shipped');
+  const readyForPickup = customerDeliveries.filter(o => o.status === 'ready_for_pickup');
+  const completedDeliveries = customerDeliveries.filter(o => o.status === 'delivered');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -289,7 +358,8 @@ function StoreDashboard() {
               <h1 className="text-2xl font-bold text-[#36656B]">
                 {activeTab === 'inventory' ? 'Inventory Management' : 
                  activeTab === 'my-sales' ? 'My Sales' : 
-                 activeTab === 'orders' ? 'Customer Orders' : 'Farmers Products'}
+                 activeTab === 'orders' ? 'Customer Orders' : 
+                 activeTab === 'customer-deliveries' ? 'Customer Deliveries' : 'Farmers Products'}
               </h1>
               <p className="text-[#36656B]/60 text-sm">
                 {activeTab === 'inventory' 
@@ -298,6 +368,8 @@ function StoreDashboard() {
                   ? 'Manage items you have put for sale'
                   : activeTab === 'orders'
                   ? 'Track and manage customer orders'
+                  : activeTab === 'customer-deliveries'
+                  ? 'Manage direct customer orders for pickup'
                   : 'Browse and purchase from farmers'}
               </p>
             </div>
@@ -575,6 +647,216 @@ function StoreDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          ) : activeTab === 'customer-deliveries' ? (
+            /* Customer Deliveries Tab */
+            <div className="space-y-6">
+              {/* Stats for customer deliveries */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[#36656B]/60 text-sm">Pending Deliveries</p>
+                      <p className="text-2xl font-bold text-orange-500">{pendingDeliveries.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-orange-500" />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[#36656B]/60 text-sm">Ready for Pickup</p>
+                      <p className="text-2xl font-bold text-blue-500">{readyForPickup.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <PackageCheck className="w-6 h-6 text-blue-500" />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[#36656B]/60 text-sm">Completed</p>
+                      <p className="text-2xl font-bold text-green-500">{completedDeliveries.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Deliveries List */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                <div className="p-4 border-b border-gray-100">
+                  <h3 className="font-semibold text-[#36656B]">Direct Customer Orders ({customerDeliveries.length} orders)</h3>
+                  <p className="text-sm text-gray-500 mt-1">Orders from buyers that need to be delivered through your store</p>
+                </div>
+                {customerDeliveries.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <PackageCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No customer deliveries yet</p>
+                    <p className="text-gray-400 text-sm mt-2">When buyers select your store for pickup, orders will appear here</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {customerDeliveries.map((order) => (
+                      <div key={order._id} className="p-6 hover:bg-gray-50">
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                          {/* Order Info */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3 flex-wrap">
+                              <span className="text-sm font-mono text-[#36656B]/60">#{order._id.slice(-8).toUpperCase()}</span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'delivered' 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : order.status === 'ready_for_pickup' 
+                                    ? 'bg-blue-100 text-blue-700' 
+                                    : order.status === 'shipped'
+                                      ? 'bg-purple-100 text-purple-700'
+                                      : 'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {order.status === 'ready_for_pickup' ? 'Ready for Pickup' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              </span>
+                              {order.qualityCheckStatus && order.qualityCheckStatus !== 'pending' && (
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  order.qualityCheckStatus === 'passed' 
+                                    ? 'bg-green-100 text-green-700' 
+                                    : order.qualityCheckStatus === 'failed'
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                  QC: {order.qualityCheckStatus.charAt(0).toUpperCase() + order.qualityCheckStatus.slice(1)}
+                                </span>
+                              )}
+                              {order.paymentStatus === 'held' && (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                  💰 Payment Held
+                                </span>
+                              )}
+                              {order.paymentStatus === 'released' && (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                  💰 Payment Released
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Customer Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p className="text-sm text-[#36656B]/60">Customer</p>
+                                <p className="font-medium text-[#36656B]">{order.buyerName || 'N/A'}</p>
+                                <p className="text-sm text-[#36656B]/70">{order.buyerEmail}</p>
+                                <p className="text-sm text-[#36656B]/70">📞 {order.contactNumber}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-[#36656B]/60">Verification Required</p>
+                                <p className="text-sm font-medium text-orange-600">Ask customer for pickup code</p>
+                                <p className="text-xs text-gray-500">Customer will provide 6-digit code</p>
+                              </div>
+                            </div>
+                            
+                            {/* Items */}
+                            <div>
+                              <p className="text-sm text-[#36656B]/60 mb-2">Items</p>
+                              <div className="space-y-2">
+                                {order.items.map((item, idx) => (
+                                  <div key={idx} className="flex items-center justify-between bg-[#F0F8A4]/20 rounded-lg px-3 py-2">
+                                    <div>
+                                      <p className="font-medium text-[#36656B]">{item.productName}</p>
+                                      <p className="text-xs text-[#36656B]/60">{item.quantity} {item.unit} • From: {item.farmerName}</p>
+                                    </div>
+                                    <p className="font-medium text-[#75B06F]">₹{item.price * item.quantity}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Quality Check Notes */}
+                            {order.qualityCheckNotes && (
+                              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p className="text-sm text-[#36656B]/60">Quality Check Notes</p>
+                                <p className="text-sm text-[#36656B]">{order.qualityCheckNotes}</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Right Side - Total & Actions */}
+                          <div className="lg:w-72 bg-gray-50 rounded-xl p-4">
+                            <div className="mb-4">
+                              <p className="text-sm text-[#36656B]/60">Order Total</p>
+                              <p className="text-2xl font-bold text-[#36656B]">₹{order.totalAmount}</p>
+                              <p className="text-xs text-[#36656B]/60 mt-1">
+                                {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                            
+                            {/* Action Buttons based on status */}
+                            <div className="space-y-2">
+                              {/* Mark as arrived at store */}
+                              {(order.status === 'confirmed' || order.status === 'processing' || order.status === 'shipped') && (
+                                <button
+                                  onClick={() => handleMarkArrived(order._id)}
+                                  className="w-full py-2 bg-purple-500 text-white font-medium rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <MapPin className="w-4 h-4" />
+                                  Mark Arrived at Store
+                                </button>
+                              )}
+                              
+                              {/* Quality Check */}
+                              {order.status === 'ready_for_pickup' && order.qualityCheckStatus === 'pending' && (
+                                <button
+                                  onClick={() => setQualityModal({ open: true, order })}
+                                  className="w-full py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <Shield className="w-4 h-4" />
+                                  Perform Quality Check
+                                </button>
+                              )}
+                              
+                              {/* Deliver to Customer */}
+                              {order.status === 'ready_for_pickup' && order.qualityCheckStatus === 'passed' && (
+                                <button
+                                  onClick={() => setDeliveryModal({ open: true, order, pickupCode: '' })}
+                                  className="w-full py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  Deliver to Customer
+                                </button>
+                              )}
+                              
+                              {/* Completed */}
+                              {order.status === 'delivered' && (
+                                <div className="flex items-center justify-center gap-2 py-2 bg-green-100 text-green-700 rounded-lg">
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span className="font-medium">Delivered</span>
+                                </div>
+                              )}
+
+                              {/* Quality Failed */}
+                              {order.qualityCheckStatus === 'failed' && (
+                                <div className="flex items-center justify-center gap-2 py-2 bg-red-100 text-red-700 rounded-lg">
+                                  <X className="w-4 h-4" />
+                                  <span className="font-medium">Quality Check Failed</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ) : activeTab === 'orders' ? (
             /* Orders Tab */
@@ -930,6 +1212,184 @@ function StoreDashboard() {
                 >
                   <Tag className="w-5 h-5" />
                   Put for Sale
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quality Check Modal */}
+      {qualityModal.open && qualityModal.order && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-[#36656B] mb-4 flex items-center gap-2">
+              <Shield className="w-6 h-6 text-[#75B06F]" />
+              Quality Check
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Order Info */}
+              <div className="p-4 bg-[#F0F8A4]/30 rounded-xl">
+                <p className="font-medium text-[#36656B]">Order #{qualityModal.order._id.slice(-8)}</p>
+                <p className="text-sm text-[#36656B]/70">Customer: {qualityModal.order.user?.name}</p>
+                <div className="mt-2">
+                  <p className="text-xs text-[#36656B]/60 font-medium">Items:</p>
+                  {qualityModal.order.items?.map((item, idx) => (
+                    <p key={idx} className="text-sm text-[#36656B]">
+                      • {item.product?.name || 'Product'} - {item.quantity} {item.product?.unit || 'units'}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quality Status Selection */}
+              <div>
+                <label className="block text-sm font-medium text-[#36656B] mb-2">Quality Status</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setQualityModal({ ...qualityModal, status: 'pass' })}
+                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                      qualityModal.status === 'pass' 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-200 hover:border-green-300'
+                    }`}
+                  >
+                    <CheckCircle className={`w-8 h-8 ${qualityModal.status === 'pass' ? 'text-green-500' : 'text-gray-400'}`} />
+                    <span className={`font-medium ${qualityModal.status === 'pass' ? 'text-green-600' : 'text-gray-600'}`}>Pass</span>
+                    <span className="text-xs text-gray-500">Quality Approved</span>
+                  </button>
+                  <button
+                    onClick={() => setQualityModal({ ...qualityModal, status: 'fail' })}
+                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                      qualityModal.status === 'fail' 
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-200 hover:border-red-300'
+                    }`}
+                  >
+                    <XCircle className={`w-8 h-8 ${qualityModal.status === 'fail' ? 'text-red-500' : 'text-gray-400'}`} />
+                    <span className={`font-medium ${qualityModal.status === 'fail' ? 'text-red-600' : 'text-gray-600'}`}>Fail</span>
+                    <span className="text-xs text-gray-500">Quality Issues</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quality Notes */}
+              <div>
+                <label className="block text-sm font-medium text-[#36656B] mb-2">Quality Notes</label>
+                <textarea
+                  value={qualityModal.notes}
+                  onChange={(e) => setQualityModal({ ...qualityModal, notes: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border rounded-lg resize-none"
+                  placeholder={qualityModal.status === 'fail' ? 'Please describe the quality issues...' : 'Optional notes about the product quality...'}
+                />
+              </div>
+
+              {qualityModal.status === 'fail' && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600">
+                    <strong>Note:</strong> Failing quality check will notify the buyer and may initiate a refund process.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setQualityModal({ open: false, order: null, status: '', notes: '' })}
+                  className="flex-1 py-3 border border-gray-300 text-[#36656B] rounded-xl hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleQualityCheck(qualityModal.order._id, qualityModal.status, qualityModal.notes)}
+                  disabled={!qualityModal.status || (qualityModal.status === 'fail' && !qualityModal.notes)}
+                  className={`flex-1 py-3 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    qualityModal.status === 'pass' 
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90' 
+                      : 'bg-gradient-to-r from-red-500 to-red-600 hover:opacity-90'
+                  }`}
+                >
+                  <Shield className="w-5 h-5" />
+                  Submit Quality Check
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delivery Confirmation Modal */}
+      {deliveryModal.open && deliveryModal.order && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-[#36656B] mb-4 flex items-center gap-2">
+              <PackageCheck className="w-6 h-6 text-[#75B06F]" />
+              Confirm Delivery
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Order Info */}
+              <div className="p-4 bg-[#F0F8A4]/30 rounded-xl">
+                <p className="font-medium text-[#36656B]">Order #{deliveryModal.order._id.slice(-8)}</p>
+                <p className="text-sm text-[#36656B]/70">Customer: {deliveryModal.order.user?.name}</p>
+                <p className="text-sm text-[#36656B]/70">Phone: {deliveryModal.order.shippingAddress?.phone}</p>
+                <div className="mt-2 pt-2 border-t border-[#36656B]/10">
+                  <p className="text-sm font-medium text-[#36656B]">Total Amount: ₹{deliveryModal.order.total?.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div>
+                <p className="text-sm font-medium text-[#36656B] mb-2">Items to Deliver:</p>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {deliveryModal.order.items?.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                      <span>{item.product?.name || 'Product'}</span>
+                      <span className="text-[#36656B]/70">{item.quantity} {item.product?.unit || 'units'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pickup Code Verification */}
+              <div>
+                <label className="block text-sm font-medium text-[#36656B] mb-2">
+                  Enter Customer's Pickup Code
+                </label>
+                <p className="text-xs text-[#36656B]/60 mb-2">
+                  Ask the customer for their 6-digit pickup code to verify identity
+                </p>
+                <input
+                  type="text"
+                  value={deliveryModal.pickupCode}
+                  onChange={(e) => setDeliveryModal({ ...deliveryModal, pickupCode: e.target.value.toUpperCase() })}
+                  maxLength={6}
+                  className="w-full px-4 py-3 border rounded-lg text-center text-2xl font-mono tracking-[0.5em] uppercase"
+                  placeholder="XXXXXX"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-sm text-blue-600">
+                  <strong>Important:</strong> Confirming delivery will release the payment to the farmer. Make sure all items have been handed over to the customer.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeliveryModal({ open: false, order: null, pickupCode: '' })}
+                  className="flex-1 py-3 border border-gray-300 text-[#36656B] rounded-xl hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeliverOrder(deliveryModal.order._id, deliveryModal.pickupCode)}
+                  disabled={!deliveryModal.pickupCode || deliveryModal.pickupCode.length !== 6}
+                  className="flex-1 py-3 bg-gradient-to-r from-[#36656B] to-[#75B06F] text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <PackageCheck className="w-5 h-5" />
+                  Confirm Delivery
                 </button>
               </div>
             </div>

@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
     DASHBOARD: '/buyer/dashboard',
     PRODUCTS: '/buyer/products',
     NEARBY_STORES: '/buyer/nearby-stores',
+    DELIVERY_STORES: '/buyer/delivery-stores',
     STORE_PRODUCTS: (storeId) => `/buyer/store/${storeId}/products`,
   },
   
@@ -109,6 +110,11 @@ export const API_ENDPOINTS = {
     PURCHASE: '/store/purchase',
     ORDERS: '/store/orders',
     ORDER_STATUS: (orderId) => `/store/orders/${orderId}/status`,
+    // Customer delivery endpoints
+    CUSTOMER_DELIVERIES: '/store/customer-deliveries',
+    CUSTOMER_DELIVERY_ARRIVED: (orderId) => `/store/customer-deliveries/${orderId}/arrived`,
+    CUSTOMER_DELIVERY_QUALITY_CHECK: (orderId) => `/store/customer-deliveries/${orderId}/quality-check`,
+    CUSTOMER_DELIVERY_DELIVER: (orderId) => `/store/customer-deliveries/${orderId}/deliver`,
   },
   
   // Orders
