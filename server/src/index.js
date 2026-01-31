@@ -19,23 +19,14 @@ const app = express();
 // Environment
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Security middleware
-if (isProduction) {
-  app.use(helmet());
-}
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 100 : 1000, // limit each IP
-  message: { error: 'Too many requests, please try again later.' }
-});
-app.use('/api/', limiter);
-
-// CORS configuration
+// CORS configuration - MUST be before other middleware
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://codesprint-hackathon-2k26.onrender.com',
+  'https://codesprint-hackathon-2k26-1.onrender.com',
+  'https://codesprint-hackathon-2k26-2.onrender.com',
+  'https://codesprint-hackathon-2k26-3.onrender.com',
   'https://codesprint-hackathon-2k26-4.onrender.com',
   process.env.CLIENT_URL,
   process.env.CORS_ORIGIN
@@ -46,16 +37,37 @@ const corsOptions = {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin) || !isProduction) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200
 };
+
+// Enable pre-flight for all routes
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
+
+// Security middleware (after CORS)
+if (isProduction) {
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
+}
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isProduction ? 100 : 1000, // limit each IP
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', limiter);
 
 // Body parser middleware - Increase payload limit for base64 images
 app.use(express.json({ limit: '50mb' }));
