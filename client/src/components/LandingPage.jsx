@@ -4,10 +4,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Header from './Header';
 import Footer from './Footer';
 import Testimonials from './Testimonials';
+import { useLanguage } from '../context/LanguageContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 function LandingPage() {
+  const { t } = useLanguage();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [activeCrop, setActiveCrop] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -369,23 +371,23 @@ function LandingPage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
                 </span>
-                Trusted by 50,000+ Farmers Across India
+                {t('landing.badge')}
               </div>
               
               <h1 className="abril-fatface-regular text-5xl lg:text-7xl leading-[1.1] text-gray-900 tracking-tight">
-                Empowering Farmers with 
+                {t('landing.heroTitle1')} 
               </h1>
               <h1 className="abril-fatface-regular text-5xl lg:text-7xl leading-[1.1] mb-4 tracking-tight bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent pb-4">
-                    Smart Agriculture
+                    {t('landing.heroTitle2')}
                   </h1>
               
               <p className="hero-subtitle text-xl text-gray-600 mb-10 leading-relaxed max-w-xl">
-                Connect directly with buyers, access real-time market prices, AI-powered insights, and maximize your profits with data-driven decisions.
+                {t('landing.heroSubtitle')}
               </p>
               
               <div className="hero-buttons flex flex-wrap gap-4 mb-12">
                 <button className="group relative flex items-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg overflow-hidden transition-all hover:shadow-2xl hover:shadow-green-500/30 hover:-translate-y-1">
-                  <span className="relative z-10">Start Trading Free</span>
+                  <span className="relative z-10">{t('landing.startTrading')}</span>
                   <svg className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>

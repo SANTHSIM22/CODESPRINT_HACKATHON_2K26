@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function FarmerDashboard() {
+  const { t, language } = useLanguage();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('add-product');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -416,13 +419,13 @@ function FarmerDashboard() {
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {[
-              { id: 'add-product', label: 'Add Product', icon: 'M12 4v16m8-8H4' },
-              { id: 'my-products', label: 'My Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-              { id: 'ask-ai', label: 'Ask AI Prices', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-              { id: 'weather', label: 'Weather Analysis', icon: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z' },
-              { id: 'orders', label: 'Orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-              { id: 'price-insights', label: 'Price Insights', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { id: 'analysis-reports', label: 'Analysis & Reports', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+              { id: 'add-product', label: t('farmer.addProduct'), icon: 'M12 4v16m8-8H4' },
+              { id: 'my-products', label: t('farmer.myProducts'), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+              { id: 'ask-ai', label: t('farmer.aiSearch'), icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+              { id: 'weather', label: t('farmer.weather'), icon: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z' },
+              { id: 'orders', label: t('farmer.orders'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+              { id: 'price-insights', label: t('farmer.priceInsights'), icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+              { id: 'analysis-reports', label: t('farmer.marketAnalysis'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
               { id: 'messages', label: 'Messages', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',  },
               { id: 'settings', label: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' }
             ].map((item) => (
@@ -448,14 +451,15 @@ function FarmerDashboard() {
 
           {/* Logout */}
           <div className="p-4 border-t border-gray-200">
+            <LanguageSwitcher />
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all mt-2"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className="font-semibold">Logout</span>
+              <span className="font-semibold">{t('farmer.logout')}</span>
             </button>
           </div>
         </div>
@@ -477,13 +481,13 @@ function FarmerDashboard() {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {activeTab === 'add-product' && 'Add New Product'}
-                  {activeTab === 'my-products' && 'My Products'}
-                  {activeTab === 'ask-ai' && 'Ask AI About Prices'}
-                  {activeTab === 'weather' && 'Weather Analysis'}
-                  {activeTab === 'orders' && 'Orders'}
-                  {activeTab === 'price-insights' && 'Price Insights'}
-                  {activeTab === 'analysis-reports' && 'Analysis & Reports'}
+                  {activeTab === 'add-product' && t('farmer.addNewProduct')}
+                  {activeTab === 'my-products' && t('farmer.myProductsList')}
+                  {activeTab === 'ask-ai' && t('farmer.aiSearchTitle')}
+                  {activeTab === 'weather' && t('farmer.weatherTitle')}
+                  {activeTab === 'orders' && t('farmer.ordersTitle')}
+                  {activeTab === 'price-insights' && t('farmer.priceInsightsTitle')}
+                  {activeTab === 'analysis-reports' && t('farmer.marketAnalysisTitle')}
                   {activeTab === 'messages' && 'Messages'}
                   {activeTab === 'settings' && 'Settings'}
                 </h1>
@@ -495,15 +499,15 @@ function FarmerDashboard() {
             <div className="hidden md:flex items-center gap-6">
               <div className="text-center px-4 py-2 bg-[#F0F8A4] rounded-xl">
                 <p className="text-2xl font-bold text-[#36656B]">{stats.totalListings}</p>
-                <p className="text-xs text-gray-600">Products</p>
+                <p className="text-xs text-gray-600">{t('farmer.totalListings')}</p>
               </div>
               <div className="text-center px-4 py-2 bg-[#DAD887] rounded-xl">
                 <p className="text-2xl font-bold text-[#36656B]">{stats.activeOffers}</p>
-                <p className="text-xs text-gray-600">Offers</p>
+                <p className="text-xs text-gray-600">{t('farmer.activeOffers')}</p>
               </div>
               <div className="text-center px-4 py-2 bg-[#75B06F] rounded-xl">
                 <p className="text-2xl font-bold text-white">₹{stats.totalRevenue.toLocaleString()}</p>
-                <p className="text-xs text-white/90">Revenue</p>
+                <p className="text-xs text-white/90">{t('farmer.totalRevenue')}</p>
               </div>
             </div>
           </div>
@@ -1149,7 +1153,7 @@ function FarmerDashboard() {
                   try {
                     const token = localStorage.getItem('token');
                     const response = await axios.post('http://localhost:5000/api/agents/price-insights', 
-                      { cropType: priceInsightsCrop, location: priceInsightsLocation },
+                      { cropType: priceInsightsCrop, location: priceInsightsLocation, language },
                       { headers: { Authorization: `Bearer ${token}` } }
                     );
                     
@@ -1166,23 +1170,23 @@ function FarmerDashboard() {
                 }} className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Crop/Commodity</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('farmer.cropCommodity')}</label>
                       <input
                         type="text"
                         value={priceInsightsCrop}
                         onChange={(e) => setPriceInsightsCrop(e.target.value)}
-                        placeholder="e.g., Wheat, Rice, Onion, Tomato"
+                        placeholder={t('farmer.cropCommodityPlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Your Location/State</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t('farmer.yourLocation')}</label>
                       <input
                         type="text"
                         value={priceInsightsLocation}
                         onChange={(e) => setPriceInsightsLocation(e.target.value)}
-                        placeholder="e.g., Punjab, Maharashtra, Uttar Pradesh"
+                        placeholder={t('farmer.yourLocationPlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         required
                       />
@@ -1199,14 +1203,14 @@ function FarmerDashboard() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Analyzing...
+                        {t('farmer.fetchingPrices')}
                       </>
                     ) : (
                       <>
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        Get Price Insights
+                        {t('farmer.getPriceInsights')}
                       </>
                     )}
                   </button>
@@ -1488,7 +1492,7 @@ function FarmerDashboard() {
                   try {
                     const token = localStorage.getItem('token');
                     const response = await axios.post('http://localhost:5000/api/agents/search', 
-                      { query: searchQuery },
+                      { query: searchQuery, language },
                       { headers: { Authorization: `Bearer ${token}` } }
                     );
                     if (response.data.success) {
@@ -1505,7 +1509,7 @@ function FarmerDashboard() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="e.g., What is the price of wheat in Punjab?"
+                      placeholder={t('farmer.aiSearchPlaceholder')}
                       className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
                     />
                     <button
@@ -1516,14 +1520,14 @@ function FarmerDashboard() {
                       {searchLoading ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                          Searching...
+                          {t('farmer.searching')}
                         </>
                       ) : (
                         <>
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
-                          Ask AI
+                          {t('farmer.askAi')}
                         </>
                       )}
                     </button>
@@ -1708,7 +1712,7 @@ function FarmerDashboard() {
                   try {
                     const token = localStorage.getItem('token');
                     const response = await axios.post('http://localhost:5000/api/agents/weather', 
-                      { cropType: weatherCrop, location: weatherLocation },
+                      { cropType: weatherCrop, location: weatherLocation, language },
                       { headers: { Authorization: `Bearer ${token}` } }
                     );
                     if (response.data.success) {
@@ -1722,22 +1726,22 @@ function FarmerDashboard() {
                 }}>
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Crop Type</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">{t('farmer.cropType')}</label>
                       <input
                         type="text"
                         value={weatherCrop}
                         onChange={(e) => setWeatherCrop(e.target.value)}
-                        placeholder="e.g., Wheat, Rice, Cotton"
+                        placeholder={t('farmer.cropTypePlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">{t('farmer.locationLabel')}</label>
                       <input
                         type="text"
                         value={weatherLocation}
                         onChange={(e) => setWeatherLocation(e.target.value)}
-                        placeholder="e.g., Punjab, Maharashtra"
+                        placeholder={t('farmer.locationInputPlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent"
                       />
                     </div>
@@ -1750,14 +1754,14 @@ function FarmerDashboard() {
                     {weatherLoading ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                        Analyzing Weather...
+                        {t('farmer.analyzingWeather')}
                       </>
                     ) : (
                       <>
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                         </svg>
-                        Get Weather Analysis
+                        {t('farmer.getAnalysis')}
                       </>
                     )}
                   </button>

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 function BuyerDashboard() {
+  const { t } = useLanguage();
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     totalPurchases: 0,
@@ -138,7 +141,7 @@ function BuyerDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              My Orders
+              {t('buyer.myOrders')}
             </Link>
             <Link 
               to="/buyer/cart"
@@ -147,15 +150,16 @@ function BuyerDashboard() {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              Cart
+              {t('buyer.cart')}
               {getCartCount() > 0 && (
                 <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                   {getCartCount()}
                 </span>
               )}
             </Link>
+            <LanguageSwitcher variant="compact" />
             <div className="text-right">
-              <p className="text-sm text-gray-500">Welcome back,</p>
+              <p className="text-sm text-gray-500">{t('buyer.welcomeBack')}</p>
               <p className="font-bold text-[#36656B]">{user.name}</p>
             </div>
             <div className="w-12 h-12 bg-gradient-to-br from-[#75B06F] to-[#36656B] rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -165,7 +169,7 @@ function BuyerDashboard() {
               onClick={handleLogout}
               className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
             >
-              Logout
+              {t('buyer.logout')}
             </button>
           </div>
         </div>
@@ -174,8 +178,8 @@ function BuyerDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#36656B] mb-2">Buyer Dashboard</h1>
-          <p className="text-gray-600 text-lg">Browse fresh products and connect with farmers</p>
+          <h1 className="text-4xl font-bold text-[#36656B] mb-2">{t('buyer.dashboard')}</h1>
+          <p className="text-gray-600 text-lg">{t('buyer.browseProducts')}</p>
         </div>
 
         {/* Stats Grid */}
@@ -190,7 +194,7 @@ function BuyerDashboard() {
               <span className="text-[#36656B] text-sm font-semibold bg-[#F0F8A4] px-2 py-1 rounded-lg">+5%</span>
             </div>
             <h3 className="text-3xl font-bold text-[#36656B] mb-1">{stats.totalPurchases}</h3>
-            <p className="text-gray-600 text-sm font-medium">Total Purchases</p>
+            <p className="text-gray-600 text-sm font-medium">{t('buyer.totalPurchases')}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all group">
@@ -203,7 +207,7 @@ function BuyerDashboard() {
               <span className="text-[#36656B] text-sm font-semibold bg-[#F0F8A4] px-2 py-1 rounded-lg">+3</span>
             </div>
             <h3 className="text-3xl font-bold text-[#36656B] mb-1">{stats.activeBids}</h3>
-            <p className="text-gray-600 text-sm font-medium">Active Bids</p>
+            <p className="text-gray-600 text-sm font-medium">{t('buyer.activeBids')}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all group">
@@ -216,7 +220,7 @@ function BuyerDashboard() {
               <span className="text-[#36656B] text-sm font-semibold bg-[#F0F8A4] px-2 py-1 rounded-lg">+12%</span>
             </div>
             <h3 className="text-3xl font-bold text-[#36656B] mb-1">₹{stats.totalSpent.toLocaleString()}</h3>
-            <p className="text-gray-600 text-sm font-medium">Total Spent</p>
+            <p className="text-gray-600 text-sm font-medium">{t('buyer.totalSpent')}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all group">
@@ -228,13 +232,13 @@ function BuyerDashboard() {
               </div>
             </div>
             <h3 className="text-3xl font-bold text-[#36656B] mb-1">{stats.savedListings}</h3>
-            <p className="text-gray-600 text-sm font-medium">Saved Listings</p>
+            <p className="text-gray-600 text-sm font-medium">{t('buyer.savedListings')}</p>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-          <h2 className="text-2xl font-bold text-[#36656B] mb-6">Quick Actions</h2>
+          <h2 className="text-2xl font-bold text-[#36656B] mb-6">{t('buyer.quickActions')}</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <button className="flex items-center gap-3 p-5 bg-[#F0F8A4] rounded-xl transition-all shadow-sm hover:shadow-md border border-[#DAD887]">
               <div className="w-12 h-12 bg-[#36656B] rounded-xl flex items-center justify-center">
@@ -242,7 +246,7 @@ function BuyerDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <span className="font-bold text-gray-900">Browse Products</span>
+              <span className="font-bold text-gray-900">{t('buyer.browseProductsBtn')}</span>
             </button>
             
             <button className="flex items-center gap-3 p-5 bg-[#f0f8a4] rounded-xl transition-all shadow-sm hover:shadow-md border border-[#DAD887]">
@@ -251,7 +255,7 @@ function BuyerDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <span className="font-bold text-gray-900">Market Insights</span>
+              <span className="font-bold text-gray-900">{t('buyer.marketInsights')}</span>
             </button>
             
             <button className="flex items-center gap-3 p-5 bg-[#f0f8a4] rounded-xl transition-all shadow-sm hover:shadow-md border border-[#DAD887]">
@@ -260,7 +264,7 @@ function BuyerDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <span className="font-bold text-black">Contact Farmers</span>
+              <span className="font-bold text-black">{t('buyer.contactFarmers')}</span>
             </button>
           </div>
         </div>
@@ -269,7 +273,7 @@ function BuyerDashboard() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-[#36656B]">Available Products</h2>
+              <h2 className="text-2xl font-bold text-[#36656B]">{t('buyer.availableProducts')}</h2>
               {(searchTerm || selectedCategory !== 'all') && (
                 <button
                   onClick={clearFilters}
@@ -278,7 +282,7 @@ function BuyerDashboard() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Clear Filters
+                  {t('buyer.clearFilters')}
                 </button>
               )}
             </div>
@@ -286,7 +290,7 @@ function BuyerDashboard() {
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search products, farmers, locations..."
+                  placeholder={t('buyer.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all"
@@ -308,12 +312,12 @@ function BuyerDashboard() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="px-4 py-2 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#75B06F] focus:border-transparent transition-all appearance-none bg-white cursor-pointer"
                 >
-                  <option value="all">All Categories</option>
-                  <option value="vegetables">Vegetables</option>
-                  <option value="fruits">Fruits</option>
-                  <option value="grains">Grains</option>
-                  <option value="dairy">Dairy</option>
-                  <option value="pulses">Pulses</option>
+                  <option value="all">{t('buyer.allCategories')}</option>
+                  <option value="vegetables">{t('farmer.vegetables')}</option>
+                  <option value="fruits">{t('farmer.fruits')}</option>
+                  <option value="grains">{t('farmer.grains')}</option>
+                  <option value="dairy">{t('farmer.dairy')}</option>
+                  <option value="pulses">{t('farmer.pulses')}</option>
                 </select>
                 <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -331,7 +335,7 @@ function BuyerDashboard() {
               <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
-              <p>No products available at the moment</p>
+              <p>{t('buyer.noProductsAvailable')}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -369,7 +373,7 @@ function BuyerDashboard() {
                       <div className="w-8 h-8 bg-gradient-to-br from-[#75B06F] to-[#36656B] rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
                         {product.farmerName?.charAt(0).toUpperCase() || 'F'}
                       </div>
-                      <span className="text-sm text-gray-600 font-medium">Sold by <span className="text-[#36656B] font-semibold">{product.farmerName}</span></span>
+                      <span className="text-sm text-gray-600 font-medium">{t('buyer.soldBy')} <span className="text-[#36656B] font-semibold">{product.farmerName}</span></span>
                     </div>
                     
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
@@ -397,14 +401,14 @@ function BuyerDashboard() {
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            Added!
+                            {t('buyer.added')}
                           </>
                         ) : (
                           <>
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            Add to Cart
+                            {t('buyer.addToCart')}
                           </>
                         )}
                       </button>

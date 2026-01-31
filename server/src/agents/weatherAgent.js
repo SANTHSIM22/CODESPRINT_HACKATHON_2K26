@@ -42,14 +42,42 @@ function getSimulatedWeather(location) {
   return { temperature: 22, humidity: 60, rainfall: 10, condition: 'Moderate' };
 }
 
+// Language configuration for multilingual support
+const languageConfig = {
+  en: {
+    name: 'English',
+    instruction: 'Respond in English.'
+  },
+  hi: {
+    name: 'Hindi',
+    instruction: 'कृपया हिंदी में जवाब दें। सभी विश्लेषण और सिफारिशें हिंदी में लिखें।'
+  },
+  ta: {
+    name: 'Tamil',
+    instruction: 'தயவுசெய்து தமிழில் பதிலளிக்கவும். அனைத்து பகுப்பாய்வுகளும் பரிந்துரைகளும் தமிழில் இருக்க வேண்டும்।'
+  },
+  pa: {
+    name: 'Punjabi',
+    instruction: 'ਕਿਰਪਾ ਕਰਕੇ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ।'
+  },
+  mr: {
+    name: 'Marathi',
+    instruction: 'कृपया मराठीत उत्तर द्या।'
+  }
+};
+
 async function weatherAnalysisAgent(state) {
   const mistral = new MistralService();
-  const { cropType, location } = state;
+  const { cropType, location, language = 'en' } = state;
 
   // Get simulated weather data
   const weather = getSimulatedWeather(location);
 
-  const prompt = `You are an expert agricultural advisor. Analyze the weather impact on ${cropType} farming in ${location}.
+  // Get language instruction
+  const langConfig = languageConfig[language] || languageConfig.en;
+  const langInstruction = language !== 'en' ? `\n\nIMPORTANT: ${langConfig.instruction} Write all text content in ${langConfig.name}.` : '';
+
+  const prompt = `You are an expert agricultural advisor. Analyze the weather impact on ${cropType} farming in ${location}.${langInstruction}
 
 CURRENT WEATHER CONDITIONS:
 - Temperature: ${weather.temperature}°C
@@ -71,7 +99,7 @@ Provide a detailed analysis in the following JSON format ONLY (no other text bef
 }
 
 Focus on practical, actionable advice specific to ${cropType} in ${location} given the current weather conditions.
-Return ONLY valid JSON.`;
+Return ONLY valid JSON.${language !== 'en' ? ` All text values in the JSON must be in ${langConfig.name}.` : ''}`;
 
   try {
     const response = await mistral.generate(prompt, {
@@ -138,8 +166,8 @@ Return ONLY valid JSON.`;
 /**
  * Standalone function to get weather analysis
  */
-async function getWeatherAnalysis(cropType, location) {
-  const result = await weatherAnalysisAgent({ cropType, location });
+async function getWeatherAnalysis(cropType, location, language = 'en') {
+  const result = await weatherAnalysisAgent({ cropType, location, language });
   return result.weatherData;
 }
 
