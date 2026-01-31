@@ -1,4 +1,4 @@
-const { StateGraph, END } = require("@langchain/langgraph");
+const { StateGraph, Annotation } = require("@langchain/langgraph");
 const { ChatMistralAI } = require("@langchain/mistralai");
 const axios = require("axios");
 
@@ -9,13 +9,25 @@ const llm = new ChatMistralAI({
   temperature: 0.3,
 });
 
-// State definition
-const graphState = {
-  query: null,
-  newsData: null,
-  analysis: null,
-  finalReport: null,
-};
+// State definition using Annotation (new LangGraph API)
+const GraphState = Annotation.Root({
+  query: Annotation({
+    reducer: (_, y) => y,
+    default: () => null,
+  }),
+  newsData: Annotation({
+    reducer: (_, y) => y,
+    default: () => null,
+  }),
+  analysis: Annotation({
+    reducer: (_, y) => y,
+    default: () => null,
+  }),
+  finalReport: Annotation({
+    reducer: (_, y) => y,
+    default: () => null,
+  }),
+});
 
 // Node: Fetch crop economy news from NewsAPI
 async function fetchNews(state) {
@@ -151,9 +163,7 @@ function getMockNews() {
 
 // Build the LangGraph workflow
 function createCropNewsGraph() {
-  const workflow = new StateGraph({
-    channels: graphState,
-  });
+  const workflow = new StateGraph(GraphState);
 
   // Add nodes
   workflow.addNode("fetch_news", fetchNews);
@@ -161,10 +171,10 @@ function createCropNewsGraph() {
   workflow.addNode("generate_report", generateReport);
 
   // Define edges
-  workflow.setEntryPoint("fetch_news");
+  workflow.addEdge("__start__", "fetch_news");
   workflow.addEdge("fetch_news", "analyze_news");
   workflow.addEdge("analyze_news", "generate_report");
-  workflow.addEdge("generate_report", END);
+  workflow.addEdge("generate_report", "__end__");
 
   return workflow.compile();
 }

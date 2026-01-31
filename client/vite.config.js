@@ -7,4 +7,11 @@ export default defineConfig({
   plugins: [react(),
      tailwindcss()
   ],
+  build: {
+    outDir: 'dist',
+    sourcemap: false
+  },
+  preview: {
+    port: 4173
+  }
 })
