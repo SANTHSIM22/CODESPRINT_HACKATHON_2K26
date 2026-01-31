@@ -55,6 +55,9 @@ function Header() {
           </ul>
 
           <div className="hidden lg:flex items-center gap-4">
+            <Link to="/store/login" className="text-black hover:text-[#36656B] font-semibold transition-colors px-4 py-2">
+              Store Portal
+            </Link>
             <Link to="/login" className="text-black hover:text-[#36656B] font-semibold transition-colors px-4 py-2">
               Log In
             </Link>
@@ -100,6 +103,9 @@ function Header() {
                 </li>
               ))}
               <li className="px-6 py-3 space-y-2">
+                <Link to="/store/login" className="block w-full text-center text-gray-700 hover:text-[#36656B] font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
+                  Store Portal
+                </Link>
                 <Link to="/login" className="block w-full text-center text-gray-700 hover:text-[#36656B] font-semibold transition-colors px-4 py-2 border border-gray-300 rounded-lg">
                   Log In
                 </Link>

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const Product = require('../models/Product');
+const Order = require('../models/Order');
+const StoreInventory = require('../models/StoreInventory');
 
 // Get farmer dashboard data
 router.get('/dashboard', authMiddleware, async (req, res) => {
@@ -151,6 +153,110 @@ router.delete('/products/:id', authMiddleware, async (req, res) => {
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get orders for farmer (from stores)
+router.get('/orders', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'farmer') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Find all orders that contain items from this farmer
+    const orders = await Order.find({
+      'items.farmerId': req.user.id
+    }).sort({ createdAt: -1 });
+
+    // Filter items to only show this farmer's items
+    const farmerOrders = orders.map(order => ({
+      _id: order._id,
+      buyerName: order.buyerName,
+      buyerEmail: order.buyerEmail,
+      shippingAddress: order.shippingAddress,
+      contactNumber: order.contactNumber,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      createdAt: order.createdAt,
+      items: order.items.filter(item => item.farmerId.toString() === req.user.id),
+      totalAmount: order.items
+        .filter(item => item.farmerId.toString() === req.user.id)
+        .reduce((sum, item) => sum + item.price, 0)
+    }));
+
+    res.json({ orders: farmerOrders });
+  } catch (error) {
+    console.error('Error fetching farmer orders:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Mark order as delivered and update store inventory
+router.put('/orders/:id/deliver', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.userType !== 'farmer') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Check if this farmer has items in this order
+    const farmerItems = order.items.filter(item => item.farmerId.toString() === req.user.id);
+    if (farmerItems.length === 0) {
+      return res.status(403).json({ error: 'You do not have items in this order' });
+    }
+
+    // Update order status to delivered
+    order.status = 'delivered';
+    order.deliveredAt = new Date();
+    await order.save();
+
+    // Update store inventory - mark as received and add quantity
+    const storeId = order.buyerId;
+    
+    for (const item of farmerItems) {
+      // Find the inventory item linked to this order
+      let inventoryItem = await StoreInventory.findOne({
+        storeId,
+        orderId: order._id,
+        productId: item.productId
+      });
+
+      if (inventoryItem) {
+        inventoryItem.deliveryStatus = 'received';
+        inventoryItem.receivedAt = new Date();
+        inventoryItem.availableQuantity = inventoryItem.purchasedQuantity;
+        await inventoryItem.save();
+      } else {
+        // Fallback: find by product and update
+        inventoryItem = await StoreInventory.findOne({
+          storeId,
+          productId: item.productId,
+          farmerId: req.user.id,
+          deliveryStatus: 'pending'
+        });
+        
+        if (inventoryItem) {
+          inventoryItem.deliveryStatus = 'received';
+          inventoryItem.receivedAt = new Date();
+          inventoryItem.availableQuantity += item.quantity;
+          inventoryItem.orderId = order._id;
+          await inventoryItem.save();
+        }
+      }
+    }
+
+    res.json({ 
+      message: 'Order marked as delivered. Store inventory updated.',
+      order 
+    });
+  } catch (error) {
+    console.error('Error marking order as delivered:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

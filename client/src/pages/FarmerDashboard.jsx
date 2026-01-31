@@ -177,20 +177,34 @@ function FarmerDashboard() {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `http://localhost:5000/api/orders/${orderId}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
       
-      // Show payment message if order is delivered
-      if (newStatus === 'delivered' && response.data.message) {
-        alert(response.data.message);
+      // Use the special farmer deliver endpoint for delivery status
+      if (newStatus === 'delivered') {
+        const response = await axios.put(
+          `http://localhost:5000/api/farmer/orders/${orderId}/deliver`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        // Show success message
+        alert(response.data.message || 'Order marked as delivered. Store inventory has been updated.');
+      } else {
+        // Regular status update for other statuses
+        const response = await axios.put(
+          `http://localhost:5000/api/orders/${orderId}/status`,
+          { status: newStatus },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        if (response.data.message) {
+          alert(response.data.message);
+        }
       }
       
       fetchOrders(token);
     } catch (error) {
       console.error('Error updating order status:', error);
+      alert(error.response?.data?.error || 'Failed to update order status');
     }
   };
 

@@ -10,6 +10,9 @@ import AdminDashboard from './pages/AdminDashboard'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import BuyerOrders from './pages/BuyerOrders'
+import StoreLogin from './pages/StoreLogin'
+import StoreSignup from './pages/StoreSignup'
+import StoreDashboard from './pages/StoreDashboard'
 
 function App() {
   return (
@@ -25,6 +28,9 @@ function App() {
         <Route path="/buyer/orders" element={<BuyerOrders />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/store/login" element={<StoreLogin />} />
+        <Route path="/store/signup" element={<StoreSignup />} />
+        <Route path="/store/dashboard" element={<StoreDashboard />} />
       </Routes>
     </Router>
   )
